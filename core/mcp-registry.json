@@ -7,6 +7,6 @@
     { "id": "tekram-paper-api", "kind": "http_service", "status": "paper_only", "allowed_modes": ["READ_ONLY", "PAPER_ONLY"] },
     { "id": "obsidian-vault-bridge", "kind": "localhost_bridge", "status": "read_verified_write_gated", "allowed_modes": ["READ_ONLY", "PREPARE_ONLY"] },
     { "id": "openclaw-read-only", "kind": "gateway", "status": "read_only", "allowed_modes": ["READ_ONLY"] },
-    { "id": "windows-companion", "kind": "localhost_companion", "status": "implementation_ready_for_windows_verification", "allowed_modes": ["EPHEMERAL_OBSERVE", "PREPARE_ONLY"] }
+    { "id": "windows-companion", "kind": "localhost_companion", "status": "live_verified_windows_2026-09-15", "allowed_modes": ["EPHEMERAL_OBSERVE", "PREPARE_ONLY"] }
   ]
 }

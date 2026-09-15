@@ -10,6 +10,10 @@ $taskName = 'Veridan Windows Companion'
 
 New-Item -ItemType Directory -Force -Path $stateDirectory | Out-Null
 
+if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
+  Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+}
+
 $bytes = New-Object byte[] 48
 $generator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
 try {
@@ -35,7 +39,7 @@ Set-Location '$escapedRepositoryPath'
 "@
 Set-Content -Path $launcherPath -Value $launcher -Encoding UTF8
 
-$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$launcherPath`""
+$action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$launcherPath`""
 $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
 $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
 $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
