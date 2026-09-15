@@ -10,6 +10,10 @@ $taskName = 'Veridan Windows Companion'
 
 New-Item -ItemType Directory -Force -Path $stateDirectory | Out-Null
 
+if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
+  Stop-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+}
+
 $bytes = New-Object byte[] 48
 $generator = [System.Security.Cryptography.RandomNumberGenerator]::Create()
 try {

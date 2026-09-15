@@ -26,10 +26,11 @@ powershell -ExecutionPolicy Bypass -File .\companion\windows\scripts\install.ps1
 
 The installer:
 
-1. generates a 384-bit random bearer token;
-2. protects it with Windows DPAPI for the current user;
-3. creates a Task Scheduler entry that runs at logon;
-4. starts the companion immediately.
+1. stops an existing Companion scheduled task before rotating credentials;
+2. generates a 384-bit random bearer token;
+3. protects it with Windows DPAPI for the current user;
+4. creates a Task Scheduler entry that runs at logon;
+5. starts the companion immediately.
 
 The scheduled companion and tray host run without console windows. WATCH remains intentionally visible whenever it is active.
 

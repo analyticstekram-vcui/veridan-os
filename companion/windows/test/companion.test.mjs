@@ -40,6 +40,7 @@ test('background startup is hidden while the WATCH indicator remains visible', a
     readFile(new URL('../scripts/install.ps1', import.meta.url), 'utf8'),
     readFile(new URL('../src/visibility.mjs', import.meta.url), 'utf8'),
   ]);
+  assert.match(installer, /Stop-ScheduledTask[\s\S]*Export-Clixml/);
   assert.match(installer, /-WindowStyle Hidden/);
   assert.match(visibility, /tray\.ps1[\s\S]*windowsHide: true/);
   assert.doesNotMatch(visibility, /watch-indicator\.ps1[\s\S]*windowsHide: true/);
