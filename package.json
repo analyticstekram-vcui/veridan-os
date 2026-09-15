@@ -12,7 +12,9 @@
     "preview": "vite preview",
     "vault-agent:bridge": "node scripts/vault-agent-bridge-server.mjs",
     "test:core": "node --test test/*.test.mjs",
-    "veridan:doctor": "node scripts/veridan-doctor.mjs"
+    "veridan:doctor": "node scripts/veridan-doctor.mjs",
+    "companion:start": "node companion/windows/src/main.mjs",
+    "test:companion": "node --test companion/windows/test/*.test.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.35",
