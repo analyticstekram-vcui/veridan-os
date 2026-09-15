@@ -1,24 +1,48 @@
 {
   "system": "Veridan Core",
-  "version": "1.0.0-alpha",
+  "version": "1.1.0-alpha",
   "organization": "Tekram Analytics",
   "primary_interface": "ChatGPT",
-  "role": "AI orchestration layer",
-  "description": "Coordinates agents, MCP servers, memory, apps, widgets, APIs, and automation workflows.",
+  "role": "Policy-governed AI orchestration layer",
+  "description": "Routes human intent to registered capabilities while keeping sensors, reasoning, policy, execution, and verification separate.",
   "operating_model": {
-    "interface": "ChatGPT receives natural language commands from the user.",
-    "router": "Veridan Core interprets intent and selects the correct execution path.",
-    "agents": "Specialized executors perform analysis, coding, research, trading preparation, and automation tasks.",
-    "mcps": "MCP servers expose external tools and data sources through standardized bridges.",
-    "memory": "Knowledge, strategies, notes, journals, and project state are persisted for later use.",
-    "automation": "Scheduled or event-triggered workflows coordinate agents and tools."
+    "interface": "ChatGPT or the Veridan desktop interface receives natural-language requests.",
+    "router": "A deterministic router resolves an intent to one registered capability and fails closed when it cannot.",
+    "agents": "Specialized agents may analyze or prepare work only through registered capabilities.",
+    "mcps": "MCP servers and local bridges expose bounded tools and report observed state.",
+    "memory": "Obsidian remains the source-backed knowledge and protocol layer; Veridan Core remains the command center.",
+    "automation": "Events may propose work, but policy and approval gates remain authoritative.",
+    "verification": "No action is reported complete until its declared verification checks pass."
   },
-  "principles": [
-    "ChatGPT is the conversational interface, not the whole system.",
-    "Veridan Core is the orchestration system.",
-    "Agents execute specialized tasks.",
-    "MCP servers bridge tools and data.",
-    "High-risk actions require explicit permission boundaries."
+  "laws": [
+    "Sensors report facts; AI interprets them.",
+    "Never infer machine state when it can be queried.",
+    "Never claim an action succeeded without verification.",
+    "Memory must identify its source.",
+    "Actions require explicit permission scopes.",
+    "Trading calculations come from TEKRAM, not the language model.",
+    "Live financial execution is isolated from reasoning and disabled in this baseline.",
+    "Screen and camera monitoring must be visible whenever active.",
+    "Sensitive sensor information is ephemeral unless explicitly saved.",
+    "Diagnostics precede modification."
   ],
-  "status": "foundation_started"
+  "safety": {
+    "default_mode": "READ_ONLY",
+    "trading_mode": "PAPER_ONLY",
+    "broker_connected": false,
+    "live_execution_enabled": false,
+    "money_movement_enabled": false,
+    "unknown_capability_policy": "DENY",
+    "unverified_completion_policy": "DENY"
+  },
+  "required_contracts": [
+    "core/agent-registry.json",
+    "core/capability-registry.json",
+    "core/event-catalog.json",
+    "core/mcp-registry.json",
+    "core/policy.json",
+    "core/router.json",
+    "core/tekram-contract.json"
+  ],
+  "status": "core_contracts_hardened"
 }

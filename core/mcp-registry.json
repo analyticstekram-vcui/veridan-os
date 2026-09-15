@@ -1,0 +1,12 @@
+{
+  "registry_type": "connector_registry",
+  "version": "1.0.0",
+  "connectors": [
+    { "id": "github-connector", "kind": "mcp", "status": "configured_externally", "allowed_modes": ["READ_ONLY", "PREPARE_ONLY"] },
+    { "id": "tradingview-mcp", "kind": "mcp", "status": "integration_in_progress", "allowed_modes": ["READ_ONLY"] },
+    { "id": "tekram-paper-api", "kind": "http_service", "status": "paper_only", "allowed_modes": ["READ_ONLY", "PAPER_ONLY"] },
+    { "id": "obsidian-vault-bridge", "kind": "localhost_bridge", "status": "read_verified_write_gated", "allowed_modes": ["READ_ONLY", "PREPARE_ONLY"] },
+    { "id": "openclaw-read-only", "kind": "gateway", "status": "read_only", "allowed_modes": ["READ_ONLY"] },
+    { "id": "windows-companion", "kind": "localhost_companion", "status": "contract_only", "allowed_modes": ["EPHEMERAL_OBSERVE", "PREPARE_ONLY"] }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "contract_type": "tekram_trading_state",
+  "version": "1.0.0",
+  "execution_mode": "PAPER_ONLY",
+  "markets": ["NQ", "MNQ"],
+  "session_authority": "current_daily_candle",
+  "calculations": {
+    "ema2": "EMA(close, 2)",
+    "ema25": "EMA(close, 25)",
+    "ema200": "EMA(close, 200)",
+    "macd": "ema2 - ema25",
+    "signalMirror": "ema25 + EMA(ema2 - ema25, 12)",
+    "rsi": "RSI(close, 14)"
+  },
+  "events": {
+    "bullish_momentum": "crossover(ema2, signalMirror)",
+    "bearish_momentum": "crossunder(ema2, signalMirror)",
+    "bullish_trend_change": "crossover(ema2, ema25)",
+    "bearish_trend_change": "crossunder(ema2, ema25)"
+  },
+  "rules": {
+    "zero_cross_meaning": "trend_change",
+    "signal_cross_meaning": "momentum_change",
+    "ema200_role": "broader_context",
+    "hema20_role": "optional_visual_only",
+    "tp_sl_ladder_reset": "zero_cross_only"
+  },
+  "hard_boundaries": ["no_live_execution", "no_llm_derived_indicator_values", "no_money_movement"]
+}

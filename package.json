@@ -10,7 +10,9 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
-    "vault-agent:bridge": "node scripts/vault-agent-bridge-server.mjs"
+    "vault-agent:bridge": "node scripts/vault-agent-bridge-server.mjs",
+    "test:core": "node --test test/*.test.mjs",
+    "veridan:doctor": "node scripts/veridan-doctor.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.35",

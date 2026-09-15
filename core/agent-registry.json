@@ -1,51 +1,66 @@
 {
   "registry_type": "agent_registry",
-  "version": "1.0.0-alpha",
+  "version": "1.1.0-alpha",
   "agents": [
     {
       "id": "trading-agent",
-      "name": "Trading Agent",
-      "purpose": "Analyze markets, evaluate trading setups, prepare trade plans, and coordinate with approved trading tools.",
-      "status": "planned",
-      "capabilities": ["market_analysis", "options_analysis", "risk_review", "trade_plan_preparation"],
-      "allowed_mcp_ids": ["tradingview-mcp", "robinhood-connector"],
-      "permission_level": "requires_confirmation_for_execution"
+      "name": "TEKRAM Trading Agent",
+      "purpose": "Explain deterministic TEKRAM state, review paper signals, and prepare paper-only trade plans.",
+      "status": "contract_ready",
+      "capabilities": ["trading.analyze", "trading.signal.review", "trading.journal.prepare"],
+      "allowed_mcp_ids": ["tradingview-mcp", "tekram-paper-api"],
+      "permission_level": "paper_only",
+      "hard_boundaries": ["no_live_orders", "no_broker_credentials", "no_money_movement"]
     },
     {
       "id": "research-agent",
       "name": "Research Agent",
-      "purpose": "Gather, summarize, and compare information from public and private sources.",
-      "status": "planned",
-      "capabilities": ["web_research", "source_synthesis", "market_research", "company_research"],
-      "allowed_mcp_ids": ["github-connector", "tradingview-mcp"],
-      "permission_level": "read_only_by_default"
-    },
-    {
-      "id": "coding-agent",
-      "name": "Coding Agent",
-      "purpose": "Inspect repositories, propose changes, edit code, and support deployment workflows.",
-      "status": "planned",
-      "capabilities": ["repo_inspection", "code_generation", "debugging", "documentation"],
+      "purpose": "Gather, summarize, compare, and cite information from approved sources.",
+      "status": "contract_ready",
+      "capabilities": ["research.public", "research.repository"],
       "allowed_mcp_ids": ["github-connector"],
-      "permission_level": "write_with_user_direction"
+      "permission_level": "read_only_by_default",
+      "hard_boundaries": ["source_required", "no_external_mutation"]
     },
     {
-      "id": "automation-agent",
-      "name": "Automation Agent",
-      "purpose": "Run scheduled and event-triggered workflows across agents and tools.",
-      "status": "planned",
-      "capabilities": ["scheduling", "event_monitoring", "workflow_dispatch"],
-      "allowed_mcp_ids": ["gmail-connector", "calendar-connector", "github-connector"],
-      "permission_level": "bounded_automation"
+      "id": "developer-agent",
+      "name": "Developer Agent",
+      "purpose": "Inspect repositories and systems, diagnose failures, prepare changes, and verify approved work.",
+      "status": "contract_ready",
+      "capabilities": ["system.inspect", "developer.inspect", "developer.change.prepare"],
+      "allowed_mcp_ids": ["github-connector", "openclaw-read-only"],
+      "permission_level": "diagnostics_before_modification",
+      "hard_boundaries": ["no_unapproved_deploy", "no_secret_mutation", "verification_required"]
     },
     {
       "id": "memory-agent",
       "name": "Memory Agent",
-      "purpose": "Maintain project knowledge, strategy notes, trading journal entries, and system documentation.",
-      "status": "planned",
-      "capabilities": ["knowledge_capture", "retrieval", "summarization", "documentation"],
+      "purpose": "Retrieve source-backed project knowledge and prepare governed Obsidian captures.",
+      "status": "contract_ready",
+      "capabilities": ["memory.search", "memory.capture.prepare"],
+      "allowed_mcp_ids": ["obsidian-vault-bridge"],
+      "permission_level": "read_only_or_approved_write",
+      "hard_boundaries": ["source_provenance_required", "write_requires_approval"]
+    },
+    {
+      "id": "desktop-agent",
+      "name": "Desktop Sensory Agent",
+      "purpose": "Request fresh, visible, consent-bound desktop observations from the Windows companion.",
+      "status": "contract_ready",
+      "capabilities": ["screen.see", "screen.watch.prepare"],
+      "allowed_mcp_ids": ["windows-companion"],
+      "permission_level": "ephemeral_visible_observation",
+      "hard_boundaries": ["visible_indicator_required", "ephemeral_by_default", "no_hidden_monitoring"]
+    },
+    {
+      "id": "automation-agent",
+      "name": "Automation Agent",
+      "purpose": "Prepare bounded event-driven workflows from registered events and capabilities.",
+      "status": "contract_ready",
+      "capabilities": ["automation.plan"],
       "allowed_mcp_ids": [],
-      "permission_level": "internal_only"
+      "permission_level": "planning_only",
+      "hard_boundaries": ["no_unregistered_dispatch", "policy_gate_required"]
     }
   ]
 }
