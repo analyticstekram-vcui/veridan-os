@@ -1,0 +1,18 @@
+{
+  "router_type": "deterministic_intent_router",
+  "version": "1.0.0",
+  "unknown_intent": "deny",
+  "rules": [
+    { "id": "system-health", "intent": "SYSTEM_DIAGNOSTIC", "capability_id": "system.inspect", "any_terms": ["system status", "check production", "health", "what broke", "diagnose"], "priority": 100 },
+    { "id": "repository-inspection", "intent": "REPOSITORY_INSPECTION", "capability_id": "developer.inspect", "any_terms": ["inspect repo", "inspect repository", "compare branch", "github", "review code"], "priority": 90 },
+    { "id": "change-preparation", "intent": "CHANGE_PREPARATION", "capability_id": "developer.change.prepare", "any_terms": ["prepare fix", "write code", "create patch", "build feature"], "priority": 80 },
+    { "id": "memory-search", "intent": "MEMORY_RETRIEVAL", "capability_id": "memory.search", "any_terms": ["what did we decide", "search vault", "find note", "remember when", "mind vault"], "priority": 90 },
+    { "id": "memory-capture", "intent": "MEMORY_CAPTURE_PREPARATION", "capability_id": "memory.capture.prepare", "any_terms": ["remember that", "capture note", "save to obsidian", "draft a note"], "priority": 85 },
+    { "id": "screen-see", "intent": "FRESH_SCREEN_OBSERVATION", "capability_id": "screen.see", "any_terms": ["look at this", "see my screen", "what am i looking at", "capture screen"], "priority": 100 },
+    { "id": "screen-watch", "intent": "SCREEN_WATCH_PREPARATION", "capability_id": "screen.watch.prepare", "any_terms": ["watch this", "watch my screen", "monitor screen"], "priority": 95 },
+    { "id": "tekram-analysis", "intent": "TEKRAM_ANALYSIS", "capability_id": "trading.analyze", "any_terms": ["what is tekram saying", "analyze nq", "analyze mnq", "trading context", "chart analysis"], "priority": 100 },
+    { "id": "signal-review", "intent": "TEKRAM_SIGNAL_REVIEW", "capability_id": "trading.signal.review", "any_terms": ["review signal", "zero cross", "signal mirror", "momentum cross"], "priority": 95 },
+    { "id": "public-research", "intent": "PUBLIC_RESEARCH", "capability_id": "research.public", "any_terms": ["research", "look up", "compare sources", "search the web"], "priority": 60 },
+    { "id": "automation-plan", "intent": "AUTOMATION_PLANNING", "capability_id": "automation.plan", "any_terms": ["plan automation", "design workflow", "event driven workflow"], "priority": 70 }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "policy_type": "veridan_permission_policy",
+  "version": "1.0.0",
+  "default_decision": "deny",
+  "levels": {
+    "0": { "name": "observe", "decision": "allow", "approval": "none" },
+    "1": { "name": "prepare", "decision": "allow", "approval": "none" },
+    "2": { "name": "local_modify", "decision": "conditional", "approval": "user_direction" },
+    "3": { "name": "external_modify", "decision": "conditional", "approval": "explicit_confirmation" },
+    "4": { "name": "financial_execution", "decision": "deny", "approval": "unavailable" }
+  },
+  "hard_denials": [
+    "broker.order.live",
+    "funds.transfer",
+    "purchase.execute",
+    "credential.exfiltrate",
+    "monitor.hidden",
+    "permission.bypass"
+  ],
+  "requirements": {
+    "source_provenance": ["memory.search", "research.public", "research.repository"],
+    "visible_monitoring_indicator": ["screen.see", "screen.watch.prepare"],
+    "verification": ["system.inspect", "developer.change.prepare", "memory.capture.prepare", "trading.signal.review"],
+    "paper_only": ["trading.analyze", "trading.signal.review", "trading.journal.prepare"]
+  }
+}

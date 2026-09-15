@@ -1,0 +1,16 @@
+{
+  "catalog_type": "event_catalog",
+  "version": "1.0.0",
+  "events": [
+    { "type": "command.received", "required": ["command_id", "source"] },
+    { "type": "route.resolved", "required": ["command_id", "intent", "capability_id", "agent_id"] },
+    { "type": "route.denied", "required": ["command_id", "reason"] },
+    { "type": "policy.evaluated", "required": ["command_id", "decision", "risk_level"] },
+    { "type": "action.proposed", "required": ["command_id", "capability_id"] },
+    { "type": "action.verified", "required": ["command_id", "capability_id", "checks"] },
+    { "type": "action.failed", "required": ["command_id", "capability_id", "reason"] },
+    { "type": "memory.note.created", "required": ["source", "path"] },
+    { "type": "trading.signal.received", "required": ["source", "symbol", "execution_mode"] },
+    { "type": "system.health.failed", "required": ["source", "check_id", "reason"] }
+  ]
+}
