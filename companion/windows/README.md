@@ -31,6 +31,8 @@ The installer:
 3. creates a Task Scheduler entry that runs at logon;
 4. starts the companion immediately.
 
+The scheduled companion and tray host run without console windows. WATCH remains intentionally visible whenever it is active.
+
 Health check:
 
 ```powershell

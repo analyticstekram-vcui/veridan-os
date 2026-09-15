@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import { loadConfig } from '../src/config.mjs';
 import { Heartbeat } from '../src/heartbeat.mjs';
@@ -32,6 +33,16 @@ test('heartbeat retains one timer and stops cleanly', async () => {
 test('screen difference is calculated locally', () => {
   assert.equal(meanAbsoluteDifference([0, 10, 20], [0, 20, 40]), 10);
   assert.throws(() => meanAbsoluteDifference([], []), /non-empty/);
+});
+
+test('background startup is hidden while the WATCH indicator remains visible', async () => {
+  const [installer, visibility] = await Promise.all([
+    readFile(new URL('../scripts/install.ps1', import.meta.url), 'utf8'),
+    readFile(new URL('../src/visibility.mjs', import.meta.url), 'utf8'),
+  ]);
+  assert.match(installer, /-WindowStyle Hidden/);
+  assert.match(visibility, /tray\.ps1[\s\S]*windowsHide: true/);
+  assert.doesNotMatch(visibility, /watch-indicator\.ps1[\s\S]*windowsHide: true/);
 });
 
 test('server exposes minimal health and protects sensor routes', async (context) => {

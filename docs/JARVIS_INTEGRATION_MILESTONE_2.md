@@ -35,4 +35,8 @@ The service supplies heartbeat, health, capabilities, last-error diagnostics, ac
 
 ## Next integration gate
 
-Before Veridan Core consumes companion observations, add a signed or mutually authenticated transport contract and verify the complete Windows chain on the target Acer PC. The companion must pass live checks for tray visibility, heartbeat continuity, active-window accuracy, SEE cleanup, WATCH stop behavior, logon startup, and restart recovery.
+The target Acer PC passed the authenticated live preflight on 2026-09-15 before and after a Windows restart. Verified checks were health, heartbeat continuity, non-executing capabilities, active-window observation, ephemeral SEE, visible WATCH, WATCH stop, clean last-error state, and logon startup.
+
+The reboot exposed background PowerShell consoles even though the service restarted correctly. The follow-up startup hardening hides the scheduled-task and tray-host consoles while deliberately keeping the WATCH indicator visible.
+
+Before Veridan Core consumes companion observations, add a signed or mutually authenticated client contract. Re-run the live preflight after reinstalling this startup hardening and confirm that only the tray icon is present while WATCH remains visibly indicated when active.

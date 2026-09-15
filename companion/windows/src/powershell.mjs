@@ -44,7 +44,7 @@ export function runPowerShell(scriptPath, { env = {}, timeoutMs = 10000 } = {}) 
   });
 }
 
-export function spawnPowerShell(scriptPath, { env = {} } = {}) {
+export function spawnPowerShell(scriptPath, { env = {}, windowsHide = false } = {}) {
   if (process.platform !== 'win32') return null;
   return spawn('powershell.exe', [
     '-NoLogo',
@@ -56,7 +56,7 @@ export function spawnPowerShell(scriptPath, { env = {} } = {}) {
     scriptPath,
   ], {
     env: { ...process.env, ...env },
-    windowsHide: false,
+    windowsHide,
     shell: false,
     stdio: 'ignore',
   });

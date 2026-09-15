@@ -22,7 +22,10 @@ export class VisibilityController {
 
   startTray() {
     if (this.#tray) return;
-    this.#tray = spawnPowerShell(resolve(scriptsDir, 'tray.ps1'), { env: this.#environment() });
+    this.#tray = spawnPowerShell(resolve(scriptsDir, 'tray.ps1'), {
+      env: this.#environment(),
+      windowsHide: true,
+    });
     this.#tray?.once('exit', () => { this.#tray = null; });
   }
 
