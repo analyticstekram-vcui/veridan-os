@@ -22,6 +22,7 @@ export async function runDoctor() {
   checkRoutes(contracts, indexes, checks);
   checkSafety(contracts, checks);
   checkTekram(contracts.tekram, checks);
+  checkCompanion(contracts.companion, checks);
   return summarize(checks);
 }
 
@@ -113,6 +114,20 @@ function checkTekram(tekram, checks) {
   safe
     ? pass(checks, 'tekram.authoritative_contract', 'Authoritative MACD, SignalMirror, and zero-cross reset rules match.')
     : fail(checks, 'tekram.authoritative_contract', 'Authoritative TEKRAM invariants changed.');
+}
+
+function checkCompanion(companion, checks) {
+  const boundaries = companion.execution_boundaries;
+  const safe = companion.platform === 'win32'
+    && companion.bind_host === '127.0.0.1'
+    && companion.authentication === 'bearer_token_required'
+    && companion.privacy.screen_frames === 'ephemeral'
+    && companion.privacy.visible_indicator_required === true
+    && companion.privacy.hidden_monitoring === false
+    && Object.values(boundaries).every((enabled) => enabled === false);
+  safe
+    ? pass(checks, 'companion.sensory_boundary', 'Windows Companion is loopback-only, visible, ephemeral, and non-executing.')
+    : fail(checks, 'companion.sensory_boundary', 'Windows Companion sensory boundary changed.');
 }
 
 function pass(checks, id, detail) {

@@ -60,6 +60,16 @@ npm run veridan:doctor
 
 `veridan doctor` checks registry references, route integrity, safety invariants, and the authoritative TEKRAM formula contract. A failed check exits non-zero.
 
+## Windows Companion
+
+Milestone 2 adds a separate Windows-local sensory service under `companion/windows/`. It provides authenticated loopback health, heartbeat, active-window observation, one-shot `SEE`, and visible `WATCH` with local-only frame comparison.
+
+```bash
+npm run test:companion
+```
+
+The companion is non-executing: it cannot type, click, automate a browser, run arbitrary commands, place trades, or move money. See `companion/windows/README.md` for Windows installation and verification.
+
 ## Integration boundary
 
 The current runtime deliberately stops at a verified route decision:

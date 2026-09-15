@@ -42,7 +42,8 @@
     "core/mcp-registry.json",
     "core/policy.json",
     "core/router.json",
-    "core/tekram-contract.json"
+    "core/tekram-contract.json",
+    "companion/windows/manifest.json"
   ],
   "status": "core_contracts_hardened"
 }

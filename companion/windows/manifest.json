@@ -1,0 +1,29 @@
+{
+  "component": "veridan-windows-companion",
+  "version": "0.1.0",
+  "platform": "win32",
+  "bind_host": "127.0.0.1",
+  "default_port": 4701,
+  "authentication": "bearer_token_required",
+  "capabilities": [
+    "health",
+    "capabilities",
+    "last_error",
+    "active_window",
+    "screen_see",
+    "screen_watch"
+  ],
+  "privacy": {
+    "screen_frames": "ephemeral",
+    "watch_processing": "local_only",
+    "visible_indicator_required": true,
+    "hidden_monitoring": false
+  },
+  "execution_boundaries": {
+    "arbitrary_shell": false,
+    "keyboard_control": false,
+    "mouse_control": false,
+    "browser_automation": false,
+    "financial_execution": false
+  }
+}
