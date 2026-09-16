@@ -1,0 +1,29 @@
+{
+  "component": "veridan-command-gateway-integration",
+  "version": "0.1.0",
+  "transport": {
+    "origin": "http://127.0.0.1:4700",
+    "bind_host": "127.0.0.1",
+    "browser_access": "same_origin_only",
+    "browser_credentials": "none"
+  },
+  "dispatch_allowlist": [
+    {
+      "capability_id": "memory.search",
+      "method": "POST",
+      "path": "/v1/commands",
+      "verification": ["sources_returned", "source_paths_scoped", "read_only_asserted"]
+    }
+  ],
+  "hard_boundaries": {
+    "arbitrary_capability_dispatch": false,
+    "mind_vault_write": false,
+    "companion_control": false,
+    "source_body_event_persistence": false,
+    "external_api": false,
+    "openclaw_dispatch": false,
+    "browser_automation": false,
+    "broker": false,
+    "banking": false
+  }
+}

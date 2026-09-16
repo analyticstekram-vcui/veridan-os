@@ -25,6 +25,7 @@ export async function runDoctor() {
   checkCompanion(contracts.companion, checks);
   checkCompanionIntegration(contracts, indexes, checks);
   checkMemoryIntegration(contracts, indexes, checks);
+  checkCommandGatewayIntegration(contracts, indexes, checks);
   return summarize(checks);
 }
 
@@ -187,6 +188,24 @@ function checkMemoryIntegration(contracts, indexes, checks) {
   errors.length === 0
     ? pass(checks, 'memory.core_integration', 'Core retrieval is signed, scoped, read-only, source-cited, and fail-closed.')
     : fail(checks, 'memory.core_integration', `Invalid integration invariants: ${errors.join(', ')}`);
+}
+
+function checkCommandGatewayIntegration(contracts, indexes, checks) {
+  const gateway = contracts.commandGateway;
+  const integration = contracts.commandGatewayIntegration;
+  const entry = integration.dispatch_allowlist?.[0];
+  const capability = indexes.capabilities.get('memory.search');
+  const expectedVerification = ['sources_returned', 'source_paths_scoped', 'read_only_asserted'];
+  const errors = [];
+  if (gateway.bind_host !== '127.0.0.1' || gateway.default_port !== 4700 || gateway.browser_access !== 'same_origin_only' || gateway.mode !== 'READ_ONLY') errors.push('gateway_transport');
+  if (!gateway.execution_boundaries || !Object.values(gateway.execution_boundaries).every((value) => value === false)) errors.push('gateway_boundaries');
+  if (integration.transport?.origin !== 'http://127.0.0.1:4700' || integration.transport?.bind_host !== '127.0.0.1' || integration.transport?.browser_access !== 'same_origin_only' || integration.transport?.browser_credentials !== 'none') errors.push('integration_transport');
+  if (integration.dispatch_allowlist?.length !== 1 || entry?.capability_id !== 'memory.search' || entry?.method !== 'POST' || entry?.path !== '/v1/commands') errors.push('allowlist');
+  if (JSON.stringify(entry?.verification) !== JSON.stringify(expectedVerification) || JSON.stringify(capability?.verification) !== JSON.stringify(expectedVerification)) errors.push('verification');
+  if (!integration.hard_boundaries || !Object.values(integration.hard_boundaries).every((value) => value === false)) errors.push('integration_boundaries');
+  errors.length === 0
+    ? pass(checks, 'command_gateway.core_integration', 'Command Desk is loopback-only, same-origin, source-backed, and limited to read-only memory search.')
+    : fail(checks, 'command_gateway.core_integration', `Invalid gateway invariants: ${errors.join(', ')}`);
 }
 
 function pass(checks, id, detail) {

@@ -12,12 +12,14 @@
     "preview": "vite preview",
     "vault-agent:bridge": "node scripts/vault-agent-bridge-server.mjs",
     "mind-vault:bridge": "node scripts/mind-vault-bridge-server.mjs",
+    "gateway:start": "node scripts/veridan-command-gateway.mjs",
     "test:core": "node --test test/*.test.mjs",
     "test:integration": "node --test test/core-companion-integration.test.mjs",
     "veridan:doctor": "node scripts/veridan-doctor.mjs",
     "companion:start": "node companion/windows/src/main.mjs",
     "test:companion": "node --test companion/windows/test/*.test.mjs",
-    "test:mind-vault": "node --test mind-vault/windows/test/*.test.mjs"
+    "test:mind-vault": "node --test mind-vault/windows/test/*.test.mjs",
+    "test:gateway": "node --test test/command-gateway.test.mjs gateway/windows/test/*.test.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.35",
