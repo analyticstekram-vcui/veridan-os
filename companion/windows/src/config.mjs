@@ -17,6 +17,7 @@ export function loadConfig(env = process.env) {
     host: LOOPBACK_HOST,
     port,
     token,
+    signatureWindowMs: positiveInteger(env.VERIDAN_SIGNATURE_WINDOW_MS, 30000),
     heartbeatIntervalMs: positiveInteger(env.VERIDAN_HEARTBEAT_INTERVAL_MS, 5000),
     watchIntervalMs: positiveInteger(env.VERIDAN_WATCH_INTERVAL_MS, 2000),
     watchUnchangedThresholdMs: positiveInteger(env.VERIDAN_WATCH_UNCHANGED_MS, 30000),

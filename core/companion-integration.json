@@ -1,0 +1,32 @@
+{
+  "contract_type": "core_companion_integration",
+  "version": "1.0.0",
+  "transport": {
+    "origin": "http://127.0.0.1:4701",
+    "authentication": "bearer_hmac_sha256",
+    "request_timeout_ms": 15000,
+    "replay_window_ms": 30000
+  },
+  "dispatch_allowlist": [
+    {
+      "capability_id": "screen.see",
+      "method": "POST",
+      "path": "/v1/see",
+      "verification": ["fresh_frame", "retention_ephemeral", "source_identified"]
+    },
+    {
+      "capability_id": "screen.watch.prepare",
+      "method": "POST",
+      "path": "/v1/watch/start",
+      "verification": ["visible_indicator", "stop_control_present", "retention_ephemeral"],
+      "requires_user_direction": true
+    }
+  ],
+  "hard_boundaries": {
+    "browser_token_exposure": false,
+    "arbitrary_path_dispatch": false,
+    "screenshot_event_persistence": false,
+    "hidden_watch": false,
+    "desktop_execution": false
+  }
+}

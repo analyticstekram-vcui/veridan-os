@@ -27,7 +27,7 @@ Create a working foundation that can:
 4. Track capabilities and permissions.
 5. Prepare the system for automation, memory, and dashboard interfaces.
 
-The first hardened core milestone is now implemented as local, deterministic contracts and a fail-closed runtime. It routes and authorizes capabilities, but it does not dispatch external actions.
+The hardened core now routes and authorizes capabilities and can dispatch only the two allowlisted sensory operations described below. All other external action dispatch remains disabled.
 
 ## Core modules
 
@@ -39,6 +39,7 @@ The first hardened core milestone is now implemented as local, deterministic con
 - `core/event-catalog.json` - events permitted on the Veridan event bus.
 - `core/policy.json` - permission levels and non-bypassable denials.
 - `core/tekram-contract.json` - authoritative TEKRAM calculations and PAPER_ONLY invariants.
+- `core/companion-integration.json` - signed, allowlisted Core-to-Companion dispatch contract.
 - `agents/` - agent definitions.
 - `mcp/` - MCP connector definitions.
 - `docs/` - architecture and operating notes.
@@ -62,20 +63,33 @@ npm run veridan:doctor
 
 ## Windows Companion
 
-Milestone 2 adds a separate Windows-local sensory service under `companion/windows/`. It provides authenticated loopback health, heartbeat, active-window observation, one-shot `SEE`, and visible `WATCH` with local-only frame comparison.
+Milestone 2 adds a separate Windows-local sensory service under `companion/windows/`. It provides signed, authenticated loopback health, heartbeat, active-window observation, one-shot `SEE`, and visible `WATCH` with local-only frame comparison.
 
 ```bash
 npm run test:companion
+npm run test:integration
 ```
 
 The companion is non-executing: it cannot type, click, automate a browser, run arbitrary commands, place trades, or move money. See `companion/windows/README.md` for Windows installation and verification.
 
-## Integration boundary
+## Core-to-Companion integration
 
-The current runtime deliberately stops at a verified route decision:
+Milestone 3 connects exactly two routed capabilities to the Windows Companion:
 
 ```text
-command -> deterministic route -> registered capability -> policy decision -> verification requirements
+command -> deterministic route -> policy -> signed loopback request -> verification -> event metadata
 ```
 
-The existing Base44 function and external gateways are not yet allowed to consume this decision directly. That integration must replace raw-command forwarding with a signed, registered capability envelope and receive a separate review.
+- `screen.see` requests one fresh ephemeral frame.
+- `screen.watch.prepare` requires direct user direction and starts only visible WATCH.
+- Requests use bearer + HMAC-SHA256, a 30-second timestamp window, and one-use nonces.
+- Screenshot bytes may be returned to the immediate caller but are never written to the Core event history.
+- Arbitrary Companion paths, desktop execution, browser automation, and financial execution remain unavailable.
+
+On the Windows host, run the real end-to-end check after reinstalling the Companion:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\companion\windows\scripts\verify-core-integration.ps1
+```
+
+The existing Base44 function and external gateways are not allowed to consume this local sensory path. Any future integration must use structured registered capabilities, re-run policy server-side, and receive a separate review.

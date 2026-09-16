@@ -1,6 +1,6 @@
 {
   "system": "Veridan Core",
-  "version": "1.1.0-alpha",
+  "version": "1.2.0-alpha",
   "organization": "Tekram Analytics",
   "primary_interface": "ChatGPT",
   "role": "Policy-governed AI orchestration layer",
@@ -43,7 +43,8 @@
     "core/policy.json",
     "core/router.json",
     "core/tekram-contract.json",
+    "core/companion-integration.json",
     "companion/windows/manifest.json"
   ],
-  "status": "core_contracts_hardened"
+  "status": "core_companion_integration_candidate"
 }

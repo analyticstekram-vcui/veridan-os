@@ -23,6 +23,7 @@ export async function runDoctor() {
   checkSafety(contracts, checks);
   checkTekram(contracts.tekram, checks);
   checkCompanion(contracts.companion, checks);
+  checkCompanionIntegration(contracts, indexes, checks);
   return summarize(checks);
 }
 
@@ -120,7 +121,9 @@ function checkCompanion(companion, checks) {
   const boundaries = companion.execution_boundaries;
   const safe = companion.platform === 'win32'
     && companion.bind_host === '127.0.0.1'
-    && companion.authentication === 'bearer_token_required'
+    && companion.authentication === 'bearer_hmac_sha256'
+    && companion.request_signing?.replay_window_ms === 30000
+    && companion.request_signing?.nonce_reuse === 'deny'
     && companion.privacy.screen_frames === 'ephemeral'
     && companion.privacy.visible_indicator_required === true
     && companion.privacy.hidden_monitoring === false
@@ -128,6 +131,41 @@ function checkCompanion(companion, checks) {
   safe
     ? pass(checks, 'companion.sensory_boundary', 'Windows Companion is loopback-only, visible, ephemeral, and non-executing.')
     : fail(checks, 'companion.sensory_boundary', 'Windows Companion sensory boundary changed.');
+}
+
+function checkCompanionIntegration(contracts, indexes, checks) {
+  const integration = contracts.companionIntegration;
+  const expected = new Map([
+    ['screen.see', { method: 'POST', path: '/v1/see' }],
+    ['screen.watch.prepare', { method: 'POST', path: '/v1/watch/start' }],
+  ]);
+  const errors = [];
+
+  if (integration.transport?.origin !== 'http://127.0.0.1:4701') errors.push('origin');
+  if (integration.transport?.authentication !== contracts.companion.authentication) errors.push('authentication');
+  if (integration.transport?.replay_window_ms !== contracts.companion.request_signing?.replay_window_ms) errors.push('replay_window');
+  if (integration.dispatch_allowlist?.length !== expected.size) errors.push('allowlist_size');
+
+  for (const entry of integration.dispatch_allowlist ?? []) {
+    const route = expected.get(entry.capability_id);
+    const capability = indexes.capabilities.get(entry.capability_id);
+    if (!route || entry.method !== route.method || entry.path !== route.path) errors.push(`route:${entry.capability_id}`);
+    if (!capability || JSON.stringify(entry.verification) !== JSON.stringify(capability.verification)) {
+      errors.push(`verification:${entry.capability_id}`);
+    }
+    if (entry.capability_id === 'screen.watch.prepare' && entry.requires_user_direction !== true) errors.push('watch_user_direction');
+    expected.delete(entry.capability_id);
+  }
+  if (expected.size > 0) errors.push(`missing:${[...expected.keys()].join(',')}`);
+
+  if (!integration.hard_boundaries || !Object.values(integration.hard_boundaries).every((enabled) => enabled === false)) {
+    errors.push('hard_boundaries');
+  }
+  if (!contracts.policy.requirements.user_direction?.includes('screen.watch.prepare')) errors.push('policy_user_direction');
+
+  errors.length === 0
+    ? pass(checks, 'companion.core_integration', 'Core dispatch is signed, allowlisted, verified, and fail-closed.')
+    : fail(checks, 'companion.core_integration', `Invalid integration invariants: ${errors.join(', ')}`);
 }
 
 function pass(checks, id, detail) {

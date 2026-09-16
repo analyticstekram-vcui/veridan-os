@@ -1,11 +1,12 @@
-# Veridan Windows Companion v1
+# Veridan Windows Companion v2
 
 The companion is Veridan's Windows-local sensory layer. It observes machine state through fixed, bundled sensors and exposes bounded results on loopback. It is not an executor and cannot run arbitrary commands, type, click, automate a browser, trade, or move money.
 
 ## Security and privacy
 
 - binds only to `127.0.0.1`;
-- requires a bearer token of at least 32 characters for every non-health route;
+- requires a token of at least 32 characters plus an HMAC-SHA256 signature for every non-health route;
+- rejects timestamps outside 30 seconds and rejects reused nonces;
 - rejects requests carrying a browser `Origin` header;
 - captures a fresh frame only for an authenticated `SEE` request;
 - deletes the temporary PNG before returning the response;
@@ -27,7 +28,7 @@ powershell -ExecutionPolicy Bypass -File .\companion\windows\scripts\install.ps1
 The installer:
 
 1. stops an existing Companion scheduled task and its verified port-4701 process before rotating credentials;
-2. generates a 384-bit random bearer token;
+2. generates a 384-bit random signing token;
 3. protects it with Windows DPAPI for the current user;
 4. creates a Task Scheduler entry that runs at logon;
 5. starts the companion immediately.
@@ -48,6 +49,12 @@ Run the authenticated live preflight:
 powershell -ExecutionPolicy Bypass -File .\companion\windows\scripts\verify.ps1
 ```
 
+After that passes, run the Core-to-Companion end-to-end preflight:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\companion\windows\scripts\verify-core-integration.ps1
+```
+
 The authenticated routes are intended for Veridan Core. The token is never printed or stored in the repository.
 
 ## Routes
@@ -55,12 +62,14 @@ The authenticated routes are intended for Veridan Core. The token is never print
 | Method | Path | Authentication | Purpose |
 |---|---|---|---|
 | GET | `/health` | No | Minimal liveness and heartbeat state |
-| GET | `/capabilities` | Bearer | Declared sensory capabilities |
-| GET | `/last-error` | Bearer | Most recent process-local diagnostic |
-| GET | `/v1/active-window` | Bearer | Fresh foreground-window observation |
-| POST | `/v1/see` | Bearer | Fresh, ephemeral PNG frame |
-| POST | `/v1/watch/start` | Bearer | Start visible local frame-diff monitoring |
-| POST | `/v1/watch/stop` | Bearer | Stop WATCH and remove its indicator |
+| GET | `/capabilities` | Signed | Declared sensory capabilities |
+| GET | `/last-error` | Signed | Most recent process-local diagnostic |
+| GET | `/v1/active-window` | Signed | Fresh foreground-window observation |
+| POST | `/v1/see` | Signed | Fresh, ephemeral PNG frame |
+| POST | `/v1/watch/start` | Signed | Start visible local frame-diff monitoring |
+| POST | `/v1/watch/stop` | Signed | Stop WATCH and remove its indicator |
+
+Signed requests carry `Authorization`, `X-Veridan-Timestamp`, `X-Veridan-Nonce`, and `X-Veridan-Signature`. The signature covers the uppercase method, exact path, timestamp, and nonce separated by newlines. Browser JavaScript never receives the token.
 
 ## Uninstall
 
