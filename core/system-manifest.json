@@ -1,6 +1,6 @@
 {
   "system": "Veridan Core",
-  "version": "1.3.0-alpha",
+  "version": "1.4.0-alpha",
   "organization": "Tekram Analytics",
   "primary_interface": "ChatGPT",
   "role": "Policy-governed AI orchestration layer",
@@ -46,7 +46,9 @@
     "core/companion-integration.json",
     "companion/windows/manifest.json",
     "core/memory-integration.json",
-    "mind-vault/manifest.json"
+    "mind-vault/manifest.json",
+    "core/command-gateway-integration.json",
+    "gateway/manifest.json"
   ],
-  "status": "core_memory_retrieval_candidate"
+  "status": "core_command_gateway_candidate"
 }

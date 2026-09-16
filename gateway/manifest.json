@@ -1,0 +1,19 @@
+{
+  "component": "veridan-command-gateway",
+  "version": "0.1.0",
+  "platform": "win32",
+  "bind_host": "127.0.0.1",
+  "default_port": 4700,
+  "browser_access": "same_origin_only",
+  "mode": "READ_ONLY",
+  "execution_boundaries": {
+    "arbitrary_capability_dispatch": false,
+    "mind_vault_write": false,
+    "companion_control": false,
+    "external_api": false,
+    "openclaw_dispatch": false,
+    "browser_automation": false,
+    "broker": false,
+    "banking": false
+  }
+}
