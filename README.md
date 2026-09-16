@@ -29,6 +29,10 @@ Create a working foundation that can:
 
 The hardened core now routes and authorizes capabilities and can dispatch only the two allowlisted sensory operations described below. All other external action dispatch remains disabled.
 
+## Mind Vault retrieval
+
+Milestone 4 adds a dedicated, authenticated localhost bridge for the registered `memory.search` capability. It is read-only, searches only fixed allowlisted Markdown folders in the Obsidian Mind Vault, and returns short citations (`sourceId`, vault-relative `path`, title, excerpt). Core events retain source identifiers only—never note text. See [Milestone 4](docs/JARVIS_INTEGRATION_MILESTONE_4.md) for the local Windows install and verification.
+
 ## Core modules
 
 - `core/router.json` - command routing rules.

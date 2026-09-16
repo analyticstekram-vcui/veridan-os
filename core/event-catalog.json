@@ -1,6 +1,6 @@
 {
   "catalog_type": "event_catalog",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "events": [
     { "type": "command.received", "required": ["command_id", "source"] },
     { "type": "route.resolved", "required": ["command_id", "intent", "capability_id", "agent_id"] },
@@ -10,6 +10,7 @@
     { "type": "action.verified", "required": ["command_id", "correlation_id", "capability_id", "checks"] },
     { "type": "action.failed", "required": ["command_id", "correlation_id", "capability_id", "reason"] },
     { "type": "observation.received", "required": ["command_id", "correlation_id", "capability_id", "observation_id", "source"] },
+    { "type": "memory.retrieved", "required": ["command_id", "correlation_id", "capability_id", "source_ids", "source_count"] },
     { "type": "memory.note.created", "required": ["source", "path"] },
     { "type": "trading.signal.received", "required": ["source", "symbol", "execution_mode"] },
     { "type": "system.health.failed", "required": ["source", "check_id", "reason"] }

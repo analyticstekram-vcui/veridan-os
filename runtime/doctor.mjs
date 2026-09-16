@@ -24,6 +24,7 @@ export async function runDoctor() {
   checkTekram(contracts.tekram, checks);
   checkCompanion(contracts.companion, checks);
   checkCompanionIntegration(contracts, indexes, checks);
+  checkMemoryIntegration(contracts, indexes, checks);
   return summarize(checks);
 }
 
@@ -166,6 +167,26 @@ function checkCompanionIntegration(contracts, indexes, checks) {
   errors.length === 0
     ? pass(checks, 'companion.core_integration', 'Core dispatch is signed, allowlisted, verified, and fail-closed.')
     : fail(checks, 'companion.core_integration', `Invalid integration invariants: ${errors.join(', ')}`);
+}
+
+function checkMemoryIntegration(contracts, indexes, checks) {
+  const integration = contracts.memoryIntegration;
+  const memory = contracts.memory;
+  const capability = indexes.capabilities.get('memory.search');
+  const entry = integration.dispatch_allowlist?.[0];
+  const expectedVerification = ['sources_returned', 'source_paths_scoped', 'read_only_asserted'];
+  const errors = [];
+  if (integration.transport?.origin !== 'http://127.0.0.1:57446') errors.push('origin');
+  if (integration.transport?.authentication !== memory.authentication) errors.push('authentication');
+  if (integration.transport?.replay_window_ms !== 30000) errors.push('replay_window');
+  if (integration.dispatch_allowlist?.length !== 1 || entry?.capability_id !== 'memory.search' || entry?.method !== 'GET' || entry?.path !== '/mind-vault/search') errors.push('allowlist');
+  if (JSON.stringify(entry?.verification) !== JSON.stringify(expectedVerification) || JSON.stringify(capability?.verification) !== JSON.stringify(expectedVerification)) errors.push('verification');
+  if (memory.bind_host !== '127.0.0.1' || memory.authentication !== 'bearer_hmac_sha256' || memory.execution_boundaries?.vault_write !== false || !Object.values(memory.execution_boundaries ?? {}).every((value) => value === false)) errors.push('bridge_boundaries');
+  if (!integration.hard_boundaries || !Object.values(integration.hard_boundaries).every((value) => value === false)) errors.push('integration_boundaries');
+  if (!Array.isArray(integration.source_scope?.allowlisted_roots) || integration.source_scope.allowlisted_roots.length === 0 || integration.source_scope?.max_results !== 5) errors.push('source_scope');
+  errors.length === 0
+    ? pass(checks, 'memory.core_integration', 'Core retrieval is signed, scoped, read-only, source-cited, and fail-closed.')
+    : fail(checks, 'memory.core_integration', `Invalid integration invariants: ${errors.join(', ')}`);
 }
 
 function pass(checks, id, detail) {

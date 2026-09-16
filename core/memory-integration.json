@@ -1,0 +1,34 @@
+{
+  "contract_type": "core_memory_integration",
+  "version": "1.0.0",
+  "transport": {
+    "origin": "http://127.0.0.1:57446",
+    "authentication": "bearer_hmac_sha256",
+    "request_timeout_ms": 15000,
+    "replay_window_ms": 30000
+  },
+  "dispatch_allowlist": [
+    {
+      "capability_id": "memory.search",
+      "method": "GET",
+      "path": "/mind-vault/search",
+      "verification": ["sources_returned", "source_paths_scoped", "read_only_asserted"]
+    }
+  ],
+  "source_scope": {
+    "vault_root": "%USERPROFILE%\\OneDrive\\Desktop\\obsidians\\veridans mind",
+    "allowlisted_roots": ["00 Dashboard", "01 System Map", "02 Veridan Operator", "03 Trading", "04 Governance", "05 SOPs", "06 Trust", "07 LLCs", "Captures", "Research", "Trading", "Veridan", "Businesses"],
+    "extensions": [".md"],
+    "max_results": 5
+  },
+  "hard_boundaries": {
+    "arbitrary_path_read": false,
+    "vault_write": false,
+    "source_body_event_persistence": false,
+    "external_api": false,
+    "scheduler": false,
+    "openclaw_dispatch": false,
+    "broker": false,
+    "banking": false
+  }
+}
