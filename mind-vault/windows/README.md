@@ -15,3 +15,5 @@ powershell -ExecutionPolicy Bypass -File .\mind-vault\windows\scripts\verify-cor
 ```
 
 The existing Vault Agent dashboard-reports bridge remains unchanged. This service is only constrained `memory.search` retrieval.
+
+Use a normal (non-Administrator) PowerShell window. The bridge task is limited to the signed-in user and starts hidden.

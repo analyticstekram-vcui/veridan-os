@@ -16,7 +16,8 @@
     "test:integration": "node --test test/core-companion-integration.test.mjs",
     "veridan:doctor": "node scripts/veridan-doctor.mjs",
     "companion:start": "node companion/windows/src/main.mjs",
-    "test:companion": "node --test companion/windows/test/*.test.mjs"
+    "test:companion": "node --test companion/windows/test/*.test.mjs",
+    "test:mind-vault": "node --test mind-vault/windows/test/*.test.mjs"
   },
   "dependencies": {
     "@base44/sdk": "^0.8.35",
