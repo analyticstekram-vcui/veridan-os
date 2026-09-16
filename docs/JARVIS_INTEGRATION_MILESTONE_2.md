@@ -39,4 +39,6 @@ The target Acer PC passed the authenticated live preflight on 2026-09-15 before 
 
 The reboot exposed background PowerShell consoles even though the service restarted correctly. The follow-up startup hardening hides the scheduled-task and tray-host consoles while deliberately keeping the WATCH indicator visible.
 
+The first credential-rotating reinstall exposed that Task Scheduler could stop the PowerShell launcher without terminating its child Node listener. Recovery was verified on 2026-09-16. The installer now identifies the exact process bound to loopback port 4701, refuses to stop an unexpected process, terminates only the matching Companion entry point, verifies port release, and only then rotates the DPAPI-protected token.
+
 Before Veridan Core consumes companion observations, add a signed or mutually authenticated client contract. Re-run the live preflight after reinstalling this startup hardening and confirm that only the tray icon is present while WATCH remains visibly indicated when active.

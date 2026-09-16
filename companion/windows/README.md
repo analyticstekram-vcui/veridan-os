@@ -26,13 +26,15 @@ powershell -ExecutionPolicy Bypass -File .\companion\windows\scripts\install.ps1
 
 The installer:
 
-1. stops an existing Companion scheduled task before rotating credentials;
+1. stops an existing Companion scheduled task and its verified port-4701 process before rotating credentials;
 2. generates a 384-bit random bearer token;
 3. protects it with Windows DPAPI for the current user;
 4. creates a Task Scheduler entry that runs at logon;
 5. starts the companion immediately.
 
 The scheduled companion and tray host run without console windows. WATCH remains intentionally visible whenever it is active.
+
+On reinstall, the installer fails closed if port `4701` belongs to anything other than the bundled Companion entry point. It does not rotate the DPAPI token until the old listener is verified, stopped, and the port is released.
 
 Health check:
 
