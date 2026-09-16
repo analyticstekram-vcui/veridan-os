@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { isAuthorized } from './auth.mjs';
+import { createRequestAuthenticator } from '../../../shared/companion-auth.mjs';
 import { observationEnvelope } from './envelope.mjs';
 
 const CAPABILITIES = Object.freeze([
@@ -12,6 +12,11 @@ const CAPABILITIES = Object.freeze([
 ]);
 
 export function createCompanionServer({ config, state, sensors, watch, visibility, clock = () => new Date() }) {
+  const authenticate = createRequestAuthenticator({
+    token: config.token,
+    now: () => clock().getTime(),
+    windowMs: config.signatureWindowMs,
+  });
   const server = createServer(async (request, response) => {
     setSecurityHeaders(response);
 
@@ -27,7 +32,7 @@ export function createCompanionServer({ config, state, sensors, watch, visibilit
         return json(response, 200, {
           status: heartbeatFresh ? 'ok' : 'degraded',
           component: 'veridan-windows-companion',
-          version: '0.1.0',
+          version: '0.2.0',
           heartbeat: snapshot.lastHeartbeatAt,
           heartbeatAgeMs,
           watchActive: snapshot.watch.active,
@@ -35,7 +40,8 @@ export function createCompanionServer({ config, state, sensors, watch, visibilit
         });
       }
 
-      if (!isAuthorized(request, config.token)) return json(response, 401, { error: 'unauthorized' });
+      const authorization = authenticate(request, url.pathname);
+      if (!authorization.ok) return json(response, 401, { error: 'unauthorized' });
 
       if (request.method === 'GET' && url.pathname === '/capabilities') {
         return json(response, 200, { capabilities: CAPABILITIES, execution: false });

@@ -6,17 +6,43 @@ if (-not (Test-Path $secretPath)) { throw 'Companion token not found. Run instal
 $secureToken = Import-Clixml -Path $secretPath
 $credential = New-Object System.Management.Automation.PSCredential('veridan', $secureToken)
 $token = $credential.GetNetworkCredential().Password
-$headers = @{ Authorization = "Bearer $token" }
 $baseUrl = 'http://127.0.0.1:4701'
 
+function New-VeridanHeaders {
+  param(
+    [Parameter(Mandatory = $true)][string]$Method,
+    [Parameter(Mandatory = $true)][string]$Path
+  )
+
+  $timestamp = [DateTimeOffset]::UtcNow.ToString('o')
+  $nonce = [Guid]::NewGuid().ToString()
+  $canonical = "$($Method.ToUpperInvariant())`n$Path`n$timestamp`n$nonce"
+  $key = [Text.Encoding]::UTF8.GetBytes($token)
+  $data = [Text.Encoding]::UTF8.GetBytes($canonical)
+  $hmac = New-Object System.Security.Cryptography.HMACSHA256
+  try {
+    $hmac.Key = $key
+    $signature = [Convert]::ToBase64String($hmac.ComputeHash($data)).TrimEnd('=').Replace('+', '-').Replace('/', '_')
+  } finally {
+    $hmac.Dispose()
+  }
+
+  return @{
+    Authorization = "Bearer $token"
+    'X-Veridan-Timestamp' = $timestamp
+    'X-Veridan-Nonce' = $nonce
+    'X-Veridan-Signature' = $signature
+  }
+}
+
 $health = Invoke-RestMethod "$baseUrl/health"
-$capabilities = Invoke-RestMethod "$baseUrl/capabilities" -Headers $headers
-$activeWindow = Invoke-RestMethod "$baseUrl/v1/active-window" -Headers $headers
-$see = Invoke-RestMethod "$baseUrl/v1/see" -Method Post -Headers $headers
-$watchStart = Invoke-RestMethod "$baseUrl/v1/watch/start" -Method Post -Headers $headers
+$capabilities = Invoke-RestMethod "$baseUrl/capabilities" -Headers (New-VeridanHeaders -Method GET -Path '/capabilities')
+$activeWindow = Invoke-RestMethod "$baseUrl/v1/active-window" -Headers (New-VeridanHeaders -Method GET -Path '/v1/active-window')
+$see = Invoke-RestMethod "$baseUrl/v1/see" -Method Post -Headers (New-VeridanHeaders -Method POST -Path '/v1/see')
+$watchStart = Invoke-RestMethod "$baseUrl/v1/watch/start" -Method Post -Headers (New-VeridanHeaders -Method POST -Path '/v1/watch/start')
 Start-Sleep -Milliseconds 500
-$watchStop = Invoke-RestMethod "$baseUrl/v1/watch/stop" -Method Post -Headers $headers
-$lastError = Invoke-RestMethod "$baseUrl/last-error" -Headers $headers
+$watchStop = Invoke-RestMethod "$baseUrl/v1/watch/stop" -Method Post -Headers (New-VeridanHeaders -Method POST -Path '/v1/watch/stop')
+$lastError = Invoke-RestMethod "$baseUrl/last-error" -Headers (New-VeridanHeaders -Method GET -Path '/last-error')
 
 $checks = @(
   @{ name = 'health'; passed = $health.status -eq 'ok' },

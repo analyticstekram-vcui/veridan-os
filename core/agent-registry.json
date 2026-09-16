@@ -1,6 +1,6 @@
 {
   "registry_type": "agent_registry",
-  "version": "1.1.0-alpha",
+  "version": "1.2.0-alpha",
   "agents": [
     {
       "id": "trading-agent",
@@ -46,7 +46,7 @@
       "id": "desktop-agent",
       "name": "Desktop Sensory Agent",
       "purpose": "Request fresh, visible, consent-bound desktop observations from the Windows companion.",
-      "status": "contract_ready",
+      "status": "core_integration_candidate",
       "capabilities": ["screen.see", "screen.watch.prepare"],
       "allowed_mcp_ids": ["windows-companion"],
       "permission_level": "ephemeral_visible_observation",

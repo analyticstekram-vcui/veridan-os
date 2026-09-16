@@ -1,38 +1,97 @@
 import { randomUUID } from 'node:crypto';
 import { EventBus } from './event-bus.mjs';
+import { createCompanionClientFromEnv } from './companion-client.mjs';
+import { createCompanionDispatcher } from './companion-dispatcher.mjs';
 import { indexContracts, loadContracts } from './contracts.mjs';
 import { routeCommand } from './router.mjs';
 
-export async function createOrchestrator() {
+const COMPANION_CAPABILITIES = new Set(['screen.see', 'screen.watch.prepare']);
+
+export async function createOrchestrator({ companionClient = null, idFactory = randomUUID } = {}) {
   const contracts = await loadContracts();
   const indexes = indexContracts(contracts);
   const events = new EventBus(contracts.events);
 
+  function route(command, context = {}) {
+    const commandId = idFactory();
+    events.publish('command.received', { command_id: commandId, source: context.source ?? 'unknown' });
+
+    const resolved = routeCommand(command, contracts, indexes, context);
+    if (resolved.status === 'denied') {
+      events.publish('route.denied', { command_id: commandId, reason: resolved.reason });
+    } else {
+      events.publish('route.resolved', {
+        command_id: commandId,
+        intent: resolved.intent,
+        capability_id: resolved.capability.id,
+        agent_id: resolved.agent.id,
+      });
+      events.publish('policy.evaluated', {
+        command_id: commandId,
+        decision: resolved.policy.decision,
+        risk_level: resolved.policy.riskLevel,
+      });
+    }
+
+    return { commandId, ...resolved };
+  }
+
   return {
     contracts,
     events,
-    route(command, context = {}) {
-      const commandId = randomUUID();
-      events.publish('command.received', { command_id: commandId, source: context.source ?? 'unknown' });
+    route,
+    async execute(command, context = {}) {
+      const resolved = route(command, context);
+      if (resolved.status !== 'routed') return resolved;
 
-      const route = routeCommand(command, contracts, indexes, context);
-      if (route.status === 'denied') {
-        events.publish('route.denied', { command_id: commandId, reason: route.reason });
-      } else {
-        events.publish('route.resolved', {
-          command_id: commandId,
-          intent: route.intent,
-          capability_id: route.capability.id,
-          agent_id: route.agent.id,
+      const correlationId = idFactory();
+      const capabilityId = resolved.capability.id;
+      events.publish('action.proposed', {
+        command_id: resolved.commandId,
+        correlation_id: correlationId,
+        capability_id: capabilityId,
+      });
+
+      try {
+        if (!COMPANION_CAPABILITIES.has(capabilityId)) {
+          const error = new Error('Capability is not connected to a dispatcher.');
+          error.code = 'capability_not_dispatchable';
+          throw error;
+        }
+        const client = companionClient ?? createCompanionClientFromEnv();
+        const verified = await createCompanionDispatcher(client).execute(capabilityId);
+        events.publish('action.verified', {
+          command_id: resolved.commandId,
+          correlation_id: correlationId,
+          capability_id: capabilityId,
+          checks: verified.checks,
         });
-        events.publish('policy.evaluated', {
-          command_id: commandId,
-          decision: route.policy.decision,
-          risk_level: route.policy.riskLevel,
+        if (verified.observationId) {
+          events.publish('observation.received', {
+            command_id: resolved.commandId,
+            correlation_id: correlationId,
+            capability_id: capabilityId,
+            observation_id: verified.observationId,
+            source: 'windows-companion',
+          });
+        }
+        return {
+          ...resolved,
+          status: 'completed',
+          correlationId,
+          result: verified.result,
+          verified: verified.checks,
+        };
+      } catch (error) {
+        const reason = error?.code ?? 'dispatch_failed';
+        events.publish('action.failed', {
+          command_id: resolved.commandId,
+          correlation_id: correlationId,
+          capability_id: capabilityId,
+          reason,
         });
+        return { ...resolved, status: 'failed', correlationId, reason };
       }
-
-      return { commandId, ...route };
     },
   };
 }

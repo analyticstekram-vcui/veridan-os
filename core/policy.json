@@ -1,6 +1,6 @@
 {
   "policy_type": "veridan_permission_policy",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "default_decision": "deny",
   "levels": {
     "0": { "name": "observe", "decision": "allow", "approval": "none" },
@@ -19,7 +19,8 @@
   ],
   "requirements": {
     "source_provenance": ["memory.search", "research.public", "research.repository"],
-    "visible_monitoring_indicator": ["screen.see", "screen.watch.prepare"],
+    "visible_monitoring_indicator": ["screen.watch.prepare"],
+    "user_direction": ["screen.watch.prepare"],
     "verification": ["system.inspect", "developer.change.prepare", "memory.capture.prepare", "trading.signal.review"],
     "paper_only": ["trading.analyze", "trading.signal.review", "trading.journal.prepare"]
   }

@@ -11,6 +11,10 @@ export function evaluatePolicy({ capability, policy, context = {} }) {
     return deny('paper_only_boundary', capability.risk_level);
   }
 
+  if (policy.requirements.user_direction?.includes(capability.id) && context.userDirected !== true) {
+    return conditional('user_direction_required', { approval: 'user_direction' }, capability);
+  }
+
   const level = policy.levels[String(capability.risk_level)];
   if (!level) {
     return deny('unknown_risk_level', capability.risk_level);

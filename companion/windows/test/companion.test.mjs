@@ -6,8 +6,13 @@ import { Heartbeat } from '../src/heartbeat.mjs';
 import { createCompanionServer } from '../src/server.mjs';
 import { createState } from '../src/state.mjs';
 import { meanAbsoluteDifference } from '../src/watch-monitor.mjs';
+import { createSignedHeaders } from '../../../shared/companion-auth.mjs';
 
 const TOKEN = 't'.repeat(48);
+
+function authHeaders(method, path, options = {}) {
+  return createSignedHeaders({ method, path, token: TOKEN, ...options });
+}
 
 test('configuration is loopback-only and requires a strong token', () => {
   assert.throws(() => loadConfig({ VERIDAN_COMPANION_TOKEN: 'short' }), /at least 32/);
@@ -78,24 +83,26 @@ test('server exposes minimal health and protects sensor routes', async (context)
   const denied = await fetch(`${origin}/capabilities`);
   assert.equal(denied.status, 401);
 
-  const authorized = { Authorization: `Bearer ${TOKEN}` };
-  const capabilities = await fetch(`${origin}/capabilities`, { headers: authorized });
+  const bearerOnly = await fetch(`${origin}/capabilities`, { headers: { Authorization: `Bearer ${TOKEN}` } });
+  assert.equal(bearerOnly.status, 401);
+
+  const capabilities = await fetch(`${origin}/capabilities`, { headers: authHeaders('GET', '/capabilities') });
   assert.equal(capabilities.status, 200);
   assert.equal((await capabilities.json()).execution, false);
 
-  const browserRequest = await fetch(`${origin}/capabilities`, { headers: { ...authorized, Origin: 'https://example.com' } });
+  const browserRequest = await fetch(`${origin}/capabilities`, { headers: { ...authHeaders('GET', '/capabilities'), Origin: 'https://example.com' } });
   assert.equal(browserRequest.status, 403);
 
-  const see = await fetch(`${origin}/v1/see`, { method: 'POST', headers: authorized });
+  const see = await fetch(`${origin}/v1/see`, { method: 'POST', headers: authHeaders('POST', '/v1/see') });
   const observation = await see.json();
   assert.equal(observation.capability, 'screen_see');
   assert.equal(observation.retention, 'ephemeral');
 
-  const started = await fetch(`${origin}/v1/watch/start`, { method: 'POST', headers: authorized });
+  const started = await fetch(`${origin}/v1/watch/start`, { method: 'POST', headers: authHeaders('POST', '/v1/watch/start') });
   assert.equal(started.status, 200);
   assert.equal(indicatorVisible, true);
 
-  const stopped = await fetch(`${origin}/v1/watch/stop`, { method: 'POST', headers: authorized });
+  const stopped = await fetch(`${origin}/v1/watch/stop`, { method: 'POST', headers: authHeaders('POST', '/v1/watch/stop') });
   assert.equal(stopped.status, 200);
   assert.equal(indicatorVisible, false);
 });
@@ -114,9 +121,38 @@ test('WATCH fails closed when its visible indicator cannot start', async (contex
   context.after(() => server.close());
   const response = await fetch(`http://${address.address}:${address.port}/v1/watch/start`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}` },
+    headers: authHeaders('POST', '/v1/watch/start'),
   });
   assert.equal(response.status, 500);
   assert.match((await response.json()).message, /Visible WATCH indicator/);
   assert.equal(state.snapshot().watch.active, false);
+});
+
+test('signed requests reject replayed nonces and stale timestamps', async (context) => {
+  const now = new Date('2026-09-16T00:00:00.000Z');
+  const config = loadConfig({ VERIDAN_COMPANION_TOKEN: TOKEN, VERIDAN_COMPANION_PORT: '0' });
+  const server = createCompanionServer({
+    config,
+    state: createState(),
+    sensors: {},
+    watch: {},
+    visibility: {},
+    clock: () => now,
+  });
+  const address = await server.listen();
+  context.after(() => server.close());
+  const origin = `http://${address.address}:${address.port}`;
+  const replayed = authHeaders('GET', '/capabilities', {
+    timestamp: now.toISOString(),
+    nonce: 'replay-nonce-0001',
+  });
+
+  assert.equal((await fetch(`${origin}/capabilities`, { headers: replayed })).status, 200);
+  assert.equal((await fetch(`${origin}/capabilities`, { headers: replayed })).status, 401);
+
+  const stale = authHeaders('GET', '/capabilities', {
+    timestamp: new Date(now.getTime() - 60_000).toISOString(),
+    nonce: 'stale-nonce-000001',
+  });
+  assert.equal((await fetch(`${origin}/capabilities`, { headers: stale })).status, 401);
 });
