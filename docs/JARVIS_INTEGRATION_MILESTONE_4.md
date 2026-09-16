@@ -22,3 +22,5 @@ powershell -ExecutionPolicy Bypass -File .\mind-vault\windows\scripts\verify-cor
 ```
 
 Expected result: `Veridan Core + Mind Vault retrieval preflight passed.`
+
+Use a normal (non-Administrator) PowerShell window. The bridge registers only for the signed-in Windows user at limited privilege and starts hidden.
