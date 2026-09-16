@@ -2,12 +2,15 @@ import { randomUUID } from 'node:crypto';
 import { EventBus } from './event-bus.mjs';
 import { createCompanionClientFromEnv } from './companion-client.mjs';
 import { createCompanionDispatcher } from './companion-dispatcher.mjs';
+import { createMemoryClientFromEnv } from './memory-client.mjs';
+import { createMemoryDispatcher } from './memory-dispatcher.mjs';
 import { indexContracts, loadContracts } from './contracts.mjs';
 import { routeCommand } from './router.mjs';
 
 const COMPANION_CAPABILITIES = new Set(['screen.see', 'screen.watch.prepare']);
+const MEMORY_CAPABILITIES = new Set(['memory.search']);
 
-export async function createOrchestrator({ companionClient = null, idFactory = randomUUID } = {}) {
+export async function createOrchestrator({ companionClient = null, memoryClient = null, idFactory = randomUUID } = {}) {
   const contracts = await loadContracts();
   const indexes = indexContracts(contracts);
   const events = new EventBus(contracts.events);
@@ -53,13 +56,18 @@ export async function createOrchestrator({ companionClient = null, idFactory = r
       });
 
       try {
-        if (!COMPANION_CAPABILITIES.has(capabilityId)) {
+        let verified;
+        if (COMPANION_CAPABILITIES.has(capabilityId)) {
+          const client = companionClient ?? createCompanionClientFromEnv();
+          verified = await createCompanionDispatcher(client).execute(capabilityId);
+        } else if (MEMORY_CAPABILITIES.has(capabilityId)) {
+          const client = memoryClient ?? createMemoryClientFromEnv();
+          verified = await createMemoryDispatcher(client).execute(capabilityId, command, context);
+        } else {
           const error = new Error('Capability is not connected to a dispatcher.');
           error.code = 'capability_not_dispatchable';
           throw error;
         }
-        const client = companionClient ?? createCompanionClientFromEnv();
-        const verified = await createCompanionDispatcher(client).execute(capabilityId);
         events.publish('action.verified', {
           command_id: resolved.commandId,
           correlation_id: correlationId,
@@ -73,6 +81,15 @@ export async function createOrchestrator({ companionClient = null, idFactory = r
             capability_id: capabilityId,
             observation_id: verified.observationId,
             source: 'windows-companion',
+          });
+        }
+        if (MEMORY_CAPABILITIES.has(capabilityId)) {
+          events.publish('memory.retrieved', {
+            command_id: resolved.commandId,
+            correlation_id: correlationId,
+            capability_id: capabilityId,
+            source_ids: verified.sourceIds,
+            source_count: verified.sourceIds.length,
           });
         }
         return {

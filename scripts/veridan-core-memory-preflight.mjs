@@ -1,0 +1,16 @@
+import { createOrchestrator } from '../runtime/orchestrator.mjs';
+import { createMemoryClientFromEnv } from '../runtime/memory-client.mjs';
+const client = createMemoryClientFromEnv();
+const health = await client.health();
+if (health.status !== 'ok' || health.component !== 'veridan-mind-vault-bridge' || health.readOnly !== true) throw new Error('Mind Vault health verification failed.');
+console.log('[PASS] mind_vault_health');
+const status = await client.status();
+if (status.readOnly !== true || !Array.isArray(status.sourceScope) || status.sourceScope.length === 0) throw new Error('Mind Vault scope verification failed.');
+console.log('[PASS] mind_vault_scope_read_only');
+const core = await createOrchestrator({ memoryClient: client });
+const result = await core.execute('Veridan, search vault for Veridan', { source: 'preflight' });
+if (result.status !== 'completed' || result.verified?.length !== 3 || result.result?.sources?.length < 1) throw new Error(`Core memory retrieval verification failed: ${result.reason ?? result.status}`);
+console.log('[PASS] core_memory_search');
+if (JSON.stringify(core.events.history()).includes(result.result.sources[0].excerpt)) throw new Error('Source excerpt was persisted in events.');
+console.log('[PASS] source_text_not_event_persisted');
+console.log('Veridan Core + Mind Vault retrieval preflight passed.');

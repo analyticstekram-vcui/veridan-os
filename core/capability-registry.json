@@ -1,11 +1,11 @@
 {
   "registry_type": "capability_registry",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "capabilities": [
     { "id": "system.inspect", "agent_id": "developer-agent", "risk_level": 0, "mode": "READ_ONLY", "verification": ["observation_timestamped", "source_identified"] },
     { "id": "developer.inspect", "agent_id": "developer-agent", "risk_level": 0, "mode": "READ_ONLY", "verification": ["repo_state_captured", "evidence_attached"] },
     { "id": "developer.change.prepare", "agent_id": "developer-agent", "risk_level": 1, "mode": "PREPARE_ONLY", "verification": ["tests_declared", "diff_reviewable"] },
-    { "id": "memory.search", "agent_id": "memory-agent", "risk_level": 0, "mode": "READ_ONLY", "verification": ["sources_returned"] },
+    { "id": "memory.search", "agent_id": "memory-agent", "risk_level": 0, "mode": "READ_ONLY", "verification": ["sources_returned", "source_paths_scoped", "read_only_asserted"] },
     { "id": "memory.capture.prepare", "agent_id": "memory-agent", "risk_level": 1, "mode": "PREPARE_ONLY", "verification": ["target_path_validated", "draft_reviewable"] },
     { "id": "screen.see", "agent_id": "desktop-agent", "risk_level": 0, "mode": "EPHEMERAL_OBSERVE", "verification": ["fresh_frame", "retention_ephemeral", "source_identified"] },
     { "id": "screen.watch.prepare", "agent_id": "desktop-agent", "risk_level": 1, "mode": "PREPARE_ONLY", "verification": ["visible_indicator", "stop_control_present", "retention_ephemeral"] },

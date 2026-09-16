@@ -1,0 +1,22 @@
+{
+  "component": "veridan-mind-vault-bridge",
+  "version": "0.1.0",
+  "platform": "win32",
+  "bind_host": "127.0.0.1",
+  "default_port": 57446,
+  "authentication": "bearer_hmac_sha256",
+  "privacy": {
+    "source_scope": "fixed_allowlisted_markdown_roots",
+    "note_bodies": "response_only",
+    "event_persistence": "source_identifiers_only"
+  },
+  "execution_boundaries": {
+    "arbitrary_path_read": false,
+    "vault_write": false,
+    "external_api": false,
+    "scheduler": false,
+    "openclaw_dispatch": false,
+    "broker": false,
+    "banking": false
+  }
+}

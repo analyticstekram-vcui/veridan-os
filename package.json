@@ -11,6 +11,7 @@
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
     "vault-agent:bridge": "node scripts/vault-agent-bridge-server.mjs",
+    "mind-vault:bridge": "node scripts/mind-vault-bridge-server.mjs",
     "test:core": "node --test test/*.test.mjs",
     "test:integration": "node --test test/core-companion-integration.test.mjs",
     "veridan:doctor": "node scripts/veridan-doctor.mjs",
