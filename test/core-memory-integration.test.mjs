@@ -16,10 +16,15 @@ test('Core retrieves source-cited vault knowledge and events persist source iden
   assert.equal(result.status, 'completed');
   assert.deepEqual(result.verified, ['sources_returned', 'source_paths_scoped', 'read_only_asserted']);
   assert.equal(result.result.sources[0].path, '03 Trading/Zero Cross.md');
+  assert.equal(result.result.sources[0].title, 'Zero Cross');
+  assert.equal(result.result.sources.length, 1);
   const history = orchestrator.events.history();
   assert.equal(history.at(-1).type, 'memory.retrieved');
   assert.equal(JSON.stringify(history).includes('TP ladder'), false);
   assert.equal(history.at(-1).payload.source_count, 1);
+
+  const governance = await fixture.client.search('governance');
+  assert.equal(governance.sources[0].title, 'Governance Matrix');
 });
 
 test('Mind Vault bridge rejects unsigned and direct arbitrary-path requests', async (context) => {
@@ -41,7 +46,9 @@ test('Core fails closed when an authenticated bridge returns no sources', async 
 async function startFixture(context) {
   const root = await mkdtemp(join(tmpdir(), 'veridan-vault-'));
   await mkdir(join(root, '03 Trading'), { recursive: true });
+  await mkdir(join(root, '04 Governance'), { recursive: true });
   await writeFile(join(root, '03 Trading', 'Zero Cross.md'), '# Zero Cross\nThe zero cross resets the TP ladder and is the only reset trigger.');
+  await writeFile(join(root, '04 Governance', 'Governance Matrix.md'), '# Purpose\nZero tolerance governance policy, cross-functional approval, and control requirements.');
   const server = createMindVaultServer({ config: { host: '127.0.0.1', port: 0, token: TOKEN, root, signatureWindowMs: 30_000 } });
   const address = await server.listen();
   context.after(() => server.close());

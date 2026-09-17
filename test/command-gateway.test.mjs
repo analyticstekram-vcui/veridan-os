@@ -23,6 +23,8 @@ test('Command Desk routes same-origin vault questions through Core and returns s
   assert.equal(body.capabilityId, 'memory.search');
   assert.deepEqual(body.verification, ['sources_returned', 'source_paths_scoped', 'read_only_asserted']);
   assert.equal(body.sources[0].path, '03 Trading/Zero Cross.md');
+  assert.deepEqual(body.answer.source, { sourceId: body.sources[0].sourceId, path: '03 Trading/Zero Cross.md', title: 'Zero Cross' });
+  assert.match(body.answer.text, /zero cross resets the TP ladder/i);
   assert.equal(JSON.stringify(body).includes(TOKEN), false);
   assert.equal(JSON.stringify(fixture.core.events.history()).includes('TP ladder'), false);
 });
@@ -53,6 +55,7 @@ test('Command Desk does not make unsupported request methods or remote assets av
   const source = await page.text();
   assert.equal(source.includes('http://'), false);
   assert.equal(source.includes('https://'), false);
+  assert.equal(source.includes('JSON.stringify(data,null,2)'), false);
   const method = await fetch(`${fixture.baseUrl}/v1/commands`, { headers: { Origin: fixture.baseUrl } });
   assert.equal(method.status, 405);
   assert.equal((await method.json()).error, 'method_not_allowed');
@@ -65,7 +68,9 @@ async function post(baseUrl, payload) {
 async function startFixture(context) {
   const root = await mkdtemp(join(tmpdir(), 'veridan-command-desk-'));
   await mkdir(join(root, '03 Trading'), { recursive: true });
+  await mkdir(join(root, '04 Governance'), { recursive: true });
   await writeFile(join(root, '03 Trading', 'Zero Cross.md'), '# Zero Cross\nThe zero cross resets the TP ladder and is the only reset trigger.');
+  await writeFile(join(root, '04 Governance', 'Governance Matrix.md'), '# Purpose\nZero tolerance governance policy and cross-functional approval controls.');
   const mindVault = createMindVaultServer({ config: { host: '127.0.0.1', port: 0, token: TOKEN, root, signatureWindowMs: 30_000 } });
   const mindAddress = await mindVault.listen();
   const memoryClient = createMemoryClient({ baseUrl: `http://${mindAddress.address}:${mindAddress.port}`, token: TOKEN });

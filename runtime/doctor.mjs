@@ -26,6 +26,7 @@ export async function runDoctor() {
   checkCompanionIntegration(contracts, indexes, checks);
   checkMemoryIntegration(contracts, indexes, checks);
   checkCommandGatewayIntegration(contracts, indexes, checks);
+  checkRetrievalQuality(contracts, checks);
   return summarize(checks);
 }
 
@@ -206,6 +207,22 @@ function checkCommandGatewayIntegration(contracts, indexes, checks) {
   errors.length === 0
     ? pass(checks, 'command_gateway.core_integration', 'Command Desk is loopback-only, same-origin, source-backed, and limited to read-only memory search.')
     : fail(checks, 'command_gateway.core_integration', `Invalid gateway invariants: ${errors.join(', ')}`);
+}
+
+function checkRetrievalQuality(contracts, checks) {
+  const quality = contracts.retrievalQuality;
+  const retrieval = contracts.memory.retrieval;
+  const expectedTerms = ['zero', 'cross', 'signal', 'macd', 'ema', 'nq', 'mnq', 'tekram', 'trading', 'chart', 'rsi', 'momentum', 'trend', 'ladder'];
+  const errors = [];
+  if (quality.ranking?.algorithm !== 'exact_phrase_path_title_domain_v1' || quality.ranking?.generic_heading_title_fallback !== 'filename') errors.push('ranking');
+  if (JSON.stringify(quality.ranking?.trading_domain_paths) !== JSON.stringify(['03 Trading', 'Trading'])) errors.push('trading_paths');
+  if (JSON.stringify(quality.ranking?.trading_query_terms) !== JSON.stringify(expectedTerms)) errors.push('trading_terms');
+  if (quality.answering?.mode !== 'source_excerpt_only' || quality.answering?.invented_summary !== false || quality.answering?.citation_required !== true) errors.push('answering');
+  if (!quality.execution_boundaries || !Object.values(quality.execution_boundaries).every((value) => value === false)) errors.push('boundaries');
+  if (retrieval?.ranking !== quality.ranking.algorithm || retrieval?.generic_heading_title_fallback !== 'filename' || retrieval?.external_model !== false) errors.push('bridge_alignment');
+  errors.length === 0
+    ? pass(checks, 'memory.retrieval_quality', 'Exact phrases, source titles, scoped Trading paths, and source-excerpt answers are enforced without an external model.')
+    : fail(checks, 'memory.retrieval_quality', `Invalid retrieval-quality invariants: ${errors.join(', ')}`);
 }
 
 function pass(checks, id, detail) {
