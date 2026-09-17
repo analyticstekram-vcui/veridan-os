@@ -1,0 +1,24 @@
+{
+  "component": "mind-vault-retrieval-quality",
+  "version": "0.1.0",
+  "ranking": {
+    "algorithm": "exact_phrase_path_title_domain_v1",
+    "generic_heading_title_fallback": "filename",
+    "trading_domain_paths": ["03 Trading", "Trading"],
+    "trading_query_terms": ["zero", "cross", "signal", "macd", "ema", "nq", "mnq", "tekram", "trading", "chart", "rsi", "momentum", "trend", "ladder"]
+  },
+  "answering": {
+    "mode": "source_excerpt_only",
+    "invented_summary": false,
+    "citation_required": true
+  },
+  "execution_boundaries": {
+    "vault_write": false,
+    "external_model": false,
+    "external_api": false,
+    "companion_control": false,
+    "openclaw_dispatch": false,
+    "broker": false,
+    "banking": false
+  }
+}

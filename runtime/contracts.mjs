@@ -11,7 +11,7 @@ async function readJson(relativePath) {
 }
 
 export async function loadContracts() {
-  const [manifest, agents, capabilities, connectors, events, policy, router, tekram, companion, companionIntegration, memory, memoryIntegration, commandGateway, commandGatewayIntegration] = await Promise.all([
+  const [manifest, agents, capabilities, connectors, events, policy, router, tekram, companion, companionIntegration, memory, memoryIntegration, commandGateway, commandGatewayIntegration, retrievalQuality] = await Promise.all([
     readJson('core/system-manifest.json'),
     readJson('core/agent-registry.json'),
     readJson('core/capability-registry.json'),
@@ -26,9 +26,10 @@ export async function loadContracts() {
     readJson('core/memory-integration.json'),
     readJson('gateway/manifest.json'),
     readJson('core/command-gateway-integration.json'),
+    readJson('core/retrieval-quality-contract.json'),
   ]);
 
-  return { manifest, agents, capabilities, connectors, events, policy, router, tekram, companion, companionIntegration, memory, memoryIntegration, commandGateway, commandGatewayIntegration };
+  return { manifest, agents, capabilities, connectors, events, policy, router, tekram, companion, companionIntegration, memory, memoryIntegration, commandGateway, commandGatewayIntegration, retrievalQuality };
 }
 
 export function indexContracts(contracts) {

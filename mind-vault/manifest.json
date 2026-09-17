@@ -1,6 +1,6 @@
 {
   "component": "veridan-mind-vault-bridge",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "platform": "win32",
   "bind_host": "127.0.0.1",
   "default_port": 57446,
@@ -9,6 +9,12 @@
     "source_scope": "fixed_allowlisted_markdown_roots",
     "note_bodies": "response_only",
     "event_persistence": "source_identifiers_only"
+  },
+  "retrieval": {
+    "ranking": "exact_phrase_path_title_domain_v1",
+    "generic_heading_title_fallback": "filename",
+    "trading_domain_paths": ["03 Trading", "Trading"],
+    "external_model": false
   },
   "execution_boundaries": {
     "arbitrary_path_read": false,
