@@ -6,7 +6,7 @@ Last verified: September 18, 2026
 
 - Repository: `analyticstekram-vcui/veridan-os`
 - Default branch: `main`
-- Current HEAD: `1e6a3d2247d2a4756d7d04387777d2606c4ec753`
+- Current HEAD: `aa65c4008a6209549484c8b07e42ff1d101432ed`
 - Current milestone: Jarvis Integration Milestone 6 — Retrieval Quality
 - Current manifest state: `core_retrieval_quality_candidate`
 - PRs #1 through #9 are merged; no open PRs were present at reconnaissance time.
@@ -35,11 +35,10 @@ The repository checks run during reconnaissance passed:
 - Installer and integration tests: 9 passed.
 - Veridan Doctor: 13 passed / 0 failed.
 
-The live Windows Mind Vault, Companion, and Command Desk preflights were not run because this environment did not have the target Windows task state, DPAPI tokens, or the user’s actual Mind Vault process. Lint and Vite build were not run because `node_modules` was absent. PR #9 reports those checks as passing, but that is historical PR evidence.
+The live Windows Mind Vault verification passed from the clean `main` checkout. The install script passed, `verify-core-retrieval.ps1` passed, the official vault path `C:\Users\peter\OneDrive\Desktop\obsidians\veridans mind` existed, and the bridge health endpoint was `http://127.0.0.1:57446/health`. The verification passed `mind_vault_health`, `mind_vault_scope_read_only`, `core_memory_search`, and `source_text_not_event_persisted`. Live Windows Companion and Command Desk preflights were not run. Lint and Vite build were not run because `node_modules` was absent. PR #9 reports those checks as passing, but that is historical PR evidence.
 
 ## Current incomplete work
 
-- Prove Milestone 6 with the actual Windows retrieval preflight.
 - Establish durable Core event and approval persistence.
 - Define migration from the older Base44 `veridanApi` path to the governed local runtime.
 - Confirm current external MCP and VPS availability.
