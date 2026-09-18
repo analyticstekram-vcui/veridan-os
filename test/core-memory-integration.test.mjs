@@ -27,6 +27,14 @@ test('Core retrieves source-cited vault knowledge and events persist source iden
   assert.equal(governance.sources[0].title, 'Governance Matrix');
 });
 
+test('Core normalizes safe plural decision queries before Mind Vault search', async (context) => {
+  const fixture = await startFixture(context);
+  const result = await (await createOrchestrator({ memoryClient: fixture.client })).execute('what did we decide about zero crosses', { source: 'test' });
+  assert.equal(result.status, 'completed');
+  assert.equal(result.result.query, 'zero cross');
+  assert.equal(result.result.sources[0].title, 'Zero Cross');
+});
+
 test('Mind Vault bridge rejects unsigned and direct arbitrary-path requests', async (context) => {
   const fixture = await startFixture(context);
   const base = fixture.baseUrl;

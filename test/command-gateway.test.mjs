@@ -16,7 +16,7 @@ test('Command Desk routes same-origin vault questions through Core and returns s
   assert.equal(health.status, 200);
   assert.equal(JSON.stringify(await health.json()).match(/token|secret/i), null);
 
-  const response = await post(fixture.baseUrl, { command: 'Veridan, what did we decide about zero cross?' });
+  const response = await post(fixture.baseUrl, { command: 'Veridan, what did we decide about zero crosses?' });
   assert.equal(response.status, 200);
   const body = await response.json();
   assert.equal(body.status, 'completed');
@@ -56,6 +56,15 @@ test('Command Desk does not make unsupported request methods or remote assets av
   assert.equal(source.includes('http://'), false);
   assert.equal(source.includes('https://'), false);
   assert.equal(source.includes('JSON.stringify(data,null,2)'), false);
+  assert.match(source, /READ ONLY — Mind Vault Search/);
+  assert.match(source, /id="voice"/);
+  assert.match(source, /SpeechRecognition/);
+  assert.match(source, /Audio is not sent to Veridan Core/);
+  assert.match(source, /id="auto-submit" type="checkbox"/);
+  assert.doesNotMatch(source, /id="auto-submit" type="checkbox" checked/);
+  assert.match(source, /fetch\('\/v1\/commands'/);
+  assert.equal(source.includes('MediaRecorder'), false);
+  assert.equal(source.includes('localStorage'), false);
   const method = await fetch(`${fixture.baseUrl}/v1/commands`, { headers: { Origin: fixture.baseUrl } });
   assert.equal(method.status, 405);
   assert.equal((await method.json()).error, 'method_not_allowed');

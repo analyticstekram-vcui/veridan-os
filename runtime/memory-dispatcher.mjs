@@ -9,6 +9,16 @@ function verify(result) {
   if (!valid) throw coded('memory_verification_failed');
   return Object.freeze({ result, checks: Object.freeze(['sources_returned', 'source_paths_scoped', 'read_only_asserted']), sourceIds: Object.freeze(sources.map(({ sourceId }) => sourceId)) });
 }
-function extractQuery(command) { const result = String(command ?? '').replace(/^(veridan[,\s]*)?/i, '').replace(/^(what did we decide about|search (the )?vault for|find (a )?note (about )?|remember when|mind vault)\s*/i, '').trim(); if (result.length < 2) throw coded('invalid_query'); return result; }
+function extractQuery(command) {
+  const result = String(command ?? '')
+    .replace(/^(veridan[,\s]*)?/i, '')
+    .replace(/^(what did we decide about|what do we know about|what have we written about|what was decided about|what did we agree on for|search (the )?mind vault for|search (the )?vault for|find (a )?notes? (about )?|remember when|mind vault|look up)\s*/i, '')
+    .replace(/\s+in the mind vault[?.!]*$/i, '')
+    .trim()
+    .replace(/\bzero crosses\b/gi, 'zero cross')
+    .replace(/\bsignal crosses\b/gi, 'signal cross');
+  if (result.length < 2) throw coded('invalid_query');
+  return result;
+}
 function isScoped(path) { return !path.startsWith('/') && !path.includes('..') && ALLOWED_ROOTS.some((root) => path === root || path.startsWith(`${root}/`)); }
 function coded(code) { const error = new Error(`Mind Vault dispatch failed: ${code}`); error.code = code; return error; }

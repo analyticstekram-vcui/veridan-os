@@ -135,5 +135,130 @@ function html(response, status, body) {
 function coded(code) { const error = new Error(code); error.code = code; return error; }
 
 function commandDesk() {
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Veridan Command Desk</title><style>body{margin:0;background:#08110d;color:#eff9f1;font:16px system-ui,sans-serif}.shell{max-width:800px;margin:6vh auto;padding:32px;background:#102219;border:1px solid #2b6547;border-radius:16px}h1{margin:0 0 8px}h2{margin:0 0 8px;font-size:1.1rem}p{color:#b5cabb;line-height:1.5}textarea{box-sizing:border-box;width:100%;min-height:110px;padding:12px;background:#07100b;color:#fff;border:1px solid #4d8b63;border-radius:8px;font:inherit}button{margin-top:12px;padding:10px 16px;border:0;border-radius:8px;background:#83d698;color:#082010;font-weight:700;cursor:pointer}.result{margin-top:20px;padding:16px;background:#07100b;border-radius:8px;min-height:4em}.source{margin-top:12px;padding:14px;border-left:3px solid #83d698;background:#0b1710}.path,.muted{font-size:.9em;color:#9eb2a4}.excerpt{white-space:pre-wrap;color:#eff9f1}</style><main class="shell"><h1>Veridan Command Desk</h1><p>Read-only, source-backed Mind Vault search. Screen access, automation, trading, and write actions are not exposed here.</p><textarea id="command" aria-label="Veridan command" placeholder="What did we decide about zero cross?"></textarea><button id="send">Search Mind Vault</button><section id="result" class="result" aria-live="polite">Ready.</section><p class="muted">This desk is available only on this Windows computer at 127.0.0.1.</p></main><script>const q=(s)=>document.querySelector(s),out=q('#result');function el(tag,text,cls){const n=document.createElement(tag);n.textContent=text||'';if(cls)n.className=cls;return n}function sourceCard(source,label){const card=el('article','','source');card.append(el('h2',label?label+': '+source.title:source.title),el('div',source.path,'path'),el('p',source.excerpt,'excerpt'));return card}function render(data){out.replaceChildren();if(data.status!=='completed'){out.append(el('strong','Request denied'),el('p',data.reason||'The local gateway could not complete this request.'));return}out.append(el('h2','Source-backed answer'),sourceCard({title:data.answer.source.title,path:data.answer.source.path,excerpt:data.answer.text},'Top source'),el('p','Verified: sources cited, source paths scoped, read-only retrieval.','muted'));if(data.sources.length>1){out.append(el('h2','Related sources'));data.sources.slice(1).forEach((source)=>out.append(sourceCard(source,'')))}}q('#send').addEventListener('click',async()=>{const command=q('#command').value.trim();out.textContent='Searching Mind Vault…';try{const response=await fetch('/v1/commands',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command})});render(await response.json())}catch{out.textContent='The local Command Gateway is unavailable.'}})</script></html>`;
+  return `<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Veridan Command Desk</title>
+<style>
+  body{margin:0;background:#08110d;color:#eff9f1;font:16px system-ui,sans-serif}
+  .shell{max-width:800px;margin:6vh auto;padding:32px;background:#102219;border:1px solid #2b6547;border-radius:16px}
+  h1{margin:0 0 8px}h2{margin:0 0 8px;font-size:1.1rem}p{color:#b5cabb;line-height:1.5}
+  .badge{display:inline-block;padding:4px 8px;border:1px solid #83d698;border-radius:999px;color:#a9eab7;font-size:.78rem;font-weight:700;letter-spacing:.04em}
+  textarea{box-sizing:border-box;width:100%;min-height:110px;padding:12px;background:#07100b;color:#fff;border:1px solid #4d8b63;border-radius:8px;font:inherit}
+  button{margin-top:12px;padding:10px 16px;border:0;border-radius:8px;background:#83d698;color:#082010;font-weight:700;cursor:pointer}
+  button:disabled{cursor:not-allowed;opacity:.55}.voice-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.voice-row button{margin-top:12px}.voice-status{color:#b5cabb;font-size:.9em}.voice-status[data-state="error"]{color:#ffb4a8}
+  .auto-submit{display:flex;align-items:center;gap:6px;color:#b5cabb;font-size:.9em}.result{margin-top:20px;padding:16px;background:#07100b;border-radius:8px;min-height:4em}
+  .source{margin-top:12px;padding:14px;border-left:3px solid #83d698;background:#0b1710}.path,.muted{font-size:.9em;color:#9eb2a4}.excerpt{white-space:pre-wrap;color:#eff9f1}
+</style>
+<main class="shell">
+  <span class="badge">READ ONLY — Mind Vault Search</span>
+  <h1>Veridan Command Desk</h1>
+  <p>Read-only, source-backed Mind Vault search. Screen access, automation, trading, and write actions are not exposed here.</p>
+  <p class="muted">Voice input uses browser transcription. Audio is not sent to Veridan Core; any browser speech provider behavior is controlled by the browser.</p>
+  <textarea id="command" aria-label="Veridan command" placeholder="What did we decide about zero cross?"></textarea>
+  <div class="voice-row">
+    <button id="voice" type="button" aria-pressed="false">🎙 Start voice input</button>
+    <label class="auto-submit"><input id="auto-submit" type="checkbox"> Submit automatically after final transcription</label>
+    <span id="voice-status" class="voice-status" data-state="stopped" role="status">Voice input stopped.</span>
+  </div>
+  <button id="send" type="button">Search Mind Vault</button>
+  <section id="result" class="result" aria-live="polite">Ready.</section>
+  <p class="muted">This desk is available only on this Windows computer at 127.0.0.1.</p>
+</main>
+<script>
+  const q = (selector) => document.querySelector(selector);
+  const command = q('#command');
+  const out = q('#result');
+  const voiceButton = q('#voice');
+  const voiceStatus = q('#voice-status');
+  const autoSubmit = q('#auto-submit');
+  const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+
+  function el(tag, text, cls) {
+    const node = document.createElement(tag);
+    node.textContent = text || '';
+    if (cls) node.className = cls;
+    return node;
+  }
+
+  function setVoiceState(state, message) {
+    voiceStatus.dataset.state = state;
+    voiceStatus.textContent = message;
+    voiceButton.setAttribute('aria-pressed', state === 'listening' ? 'true' : 'false');
+    voiceButton.textContent = state === 'listening' ? '⏹ Stop voice input' : '🎙 Start voice input';
+  }
+
+  function sourceCard(source, label) {
+    const card = el('article', '', 'source');
+    card.append(el('h2', label ? label + ': ' + source.title : source.title), el('div', source.path, 'path'), el('p', source.excerpt, 'excerpt'));
+    return card;
+  }
+
+  function render(data) {
+    out.replaceChildren();
+    if (data.status !== 'completed') {
+      out.append(el('strong', 'Request denied'), el('p', data.reason || 'The local gateway could not complete this request.'));
+      return;
+    }
+    out.append(el('h2', 'Source-backed answer'), sourceCard({ title: data.answer.source.title, path: data.answer.source.path, excerpt: data.answer.text }, 'Top source'), el('p', 'Verified: sources cited, source paths scoped, read-only retrieval.', 'muted'));
+    if (data.sources.length > 1) {
+      out.append(el('h2', 'Related sources'));
+      data.sources.slice(1).forEach((source) => out.append(sourceCard(source, '')));
+    }
+  }
+
+  async function submitCommand() {
+    const text = command.value.trim();
+    if (!text) {
+      out.textContent = 'Enter a question first.';
+      return;
+    }
+    out.textContent = 'Searching Mind Vault…';
+    try {
+      const response = await fetch('/v1/commands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: text }) });
+      render(await response.json());
+    } catch {
+      out.textContent = 'The local Command Gateway is unavailable.';
+    }
+  }
+
+  q('#send').addEventListener('click', submitCommand);
+
+  if (!Recognition) {
+    voiceButton.disabled = true;
+    setVoiceState('error', 'Voice input is not supported in this browser.');
+  } else {
+    recognition = new Recognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = navigator.language || 'en-US';
+    recognition.onstart = () => setVoiceState('listening', 'Listening…');
+    recognition.onresult = (event) => {
+      let transcript = '';
+      let finalResult = false;
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        transcript += event.results[index][0].transcript;
+        finalResult = finalResult || event.results[index].isFinal;
+      }
+      if (transcript.trim()) command.value = transcript.trim();
+      if (finalResult && autoSubmit.checked) submitCommand();
+    };
+    recognition.onerror = (event) => setVoiceState('error', 'Voice input error: ' + event.error + '.');
+    recognition.onend = () => setVoiceState('stopped', 'Voice input stopped. Review the text before searching.');
+    voiceButton.addEventListener('click', () => {
+      if (voiceStatus.dataset.state === 'listening') {
+        recognition.stop();
+        return;
+      }
+      try {
+        recognition.start();
+      } catch {
+        setVoiceState('error', 'Voice input could not start.');
+      }
+    });
+  }
+</script>
+</html>`;
 }
