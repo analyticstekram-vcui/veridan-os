@@ -10,10 +10,10 @@ import { routeCommand } from './router.mjs';
 const COMPANION_CAPABILITIES = new Set(['screen.see', 'screen.watch.prepare']);
 const MEMORY_CAPABILITIES = new Set(['memory.search']);
 
-export async function createOrchestrator({ companionClient = null, memoryClient = null, idFactory = randomUUID } = {}) {
+export async function createOrchestrator({ companionClient = null, memoryClient = null, eventStore = null, idFactory = randomUUID } = {}) {
   const contracts = await loadContracts();
   const indexes = indexContracts(contracts);
-  const events = new EventBus(contracts.events);
+  const events = new EventBus(contracts.events, { store: eventStore, initialEvents: eventStore?.replay() ?? [] });
 
   function route(command, context = {}) {
     const commandId = idFactory();

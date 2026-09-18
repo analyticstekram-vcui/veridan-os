@@ -6,7 +6,7 @@ Last verified: September 18, 2026
 
 - Repository: `analyticstekram-vcui/veridan-os`
 - Default branch: `main`
-- Current HEAD: `aa65c4008a6209549484c8b07e42ff1d101432ed`
+- Current HEAD: `0194ed6cd19d814b25f554c3a1a98a7069787779`
 - Current milestone: Jarvis Integration Milestone 6 — Retrieval Quality
 - Current manifest state: `core_retrieval_quality_candidate`
 - PRs #1 through #9 are merged; no open PRs were present at reconnaissance time.
@@ -22,6 +22,7 @@ The repository declares `READ_ONLY` as the default mode, `PAPER_ONLY` for tradin
 - Signed Core-to-Companion dispatch for ephemeral SEE and visible WATCH preparation.
 - Authenticated, fixed-scope Mind Vault retrieval.
 - Retrieval quality ranking with source-backed excerpts and citations.
+- Sanitized append-only local Core event history with replay and deterministic duplicate handling.
 - Loopback-only Command Desk restricted to `memory.search`.
 - Limited current-user Windows task installers and static installer tests.
 
@@ -31,7 +32,7 @@ Evidence: `runtime/`, `companion/`, `mind-vault/`, `gateway/`, `core/`, `test/`,
 
 The repository checks run during reconnaissance passed:
 
-- Core tests: 17 passed.
+- Core tests: 25 passed.
 - Installer and integration tests: 9 passed.
 - Veridan Doctor: 13 passed / 0 failed.
 
@@ -39,7 +40,7 @@ The live Windows Mind Vault verification passed from the clean `main` checkout. 
 
 ## Current incomplete work
 
-- Establish durable Core event and approval persistence.
+- Implement durable approval lifecycle and approval authority; Phase A event history is complete.
 - Define migration from the older Base44 `veridanApi` path to the governed local runtime.
 - Confirm current external MCP and VPS availability.
 - Establish a current deployment verification path; `main` contains no `.github/workflows/` directory.
