@@ -164,6 +164,8 @@ function commandDesk() {
     <span id="voice-status" class="voice-status" data-state="stopped" role="status">Voice input stopped.</span>
   </div>
   <label class="auto-read"><input id="auto-read" type="checkbox"> Read answers aloud automatically</label>
+  <label class="response-style">Response style <select id="response-style" aria-label="Response style"><option value="direct" selected>Direct</option><option value="assistant">Assistant</option></select></label>
+  <p class="muted">Assistant style changes presentation only; source citations and read-only safeguards remain unchanged.</p>
   <div class="speech-settings">
     <label>Voice <select id="voice-select" aria-label="Speech voice"></select></label>
     <label>Rate <input id="voice-rate" type="range" min="0.5" max="2" step="0.1" value="0.9"><output id="voice-rate-value">0.9</output></label>
@@ -184,6 +186,7 @@ function commandDesk() {
   const voiceStatus = q('#voice-status');
   const autoSubmit = q('#auto-submit');
   const autoRead = q('#auto-read');
+  const responseStyle = q('#response-style');
   const voiceSelect = q('#voice-select');
   const voiceRate = q('#voice-rate');
   const voicePitch = q('#voice-pitch');
@@ -195,8 +198,10 @@ function commandDesk() {
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   const speechSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
   const speechSettingsKey = 'veridan-command-desk-speech-settings-v1';
+  const responseStyleKey = 'veridan-command-desk-response-style-v1';
   const defaultSpeechSettings = { voiceKey: '', rate: 0.9, pitch: 0.9, volume: 1.0 };
   let speechSettings = loadSpeechSettings();
+  let selectedResponseStyle = loadResponseStyle();
   let selectedVoice = null;
   let recognition = null;
 
@@ -233,6 +238,22 @@ function commandDesk() {
       window.localStorage.setItem(speechSettingsKey, JSON.stringify(speechSettings));
     } catch {
       speechSettingsStatus.textContent = 'Voice settings could not be saved in this browser.';
+    }
+  }
+
+  function loadResponseStyle() {
+    try {
+      return window.localStorage.getItem(responseStyleKey) === 'assistant' ? 'assistant' : 'direct';
+    } catch {
+      return 'direct';
+    }
+  }
+
+  function saveResponseStyle() {
+    try {
+      window.localStorage.setItem(responseStyleKey, selectedResponseStyle);
+    } catch {
+      speechSettingsStatus.textContent = 'Response style could not be saved in this browser.';
     }
   }
 
@@ -327,10 +348,15 @@ function commandDesk() {
   function render(data) {
     out.replaceChildren();
     if (data.status !== 'completed') {
-      out.append(el('strong', 'Request denied'), el('p', data.reason || 'The local gateway could not complete this request.'));
+      const message = selectedResponseStyle === 'assistant'
+        ? (data.reason === 'memory_verification_failed' ? 'No verified source found.' : 'That request is outside read-only mode.')
+        : 'Request denied';
+      out.append(el('strong', message), el('p', data.reason || 'The local gateway could not complete this request.'));
       return;
     }
-    out.append(el('h2', 'Source-backed answer'), sourceCard({ title: data.answer.source.title, path: data.answer.source.path, excerpt: data.answer.text }, 'Top source'), el('p', 'Verified: sources cited, source paths scoped, read-only retrieval.', 'muted'), speechControls(data.answer.text));
+    const heading = selectedResponseStyle === 'assistant' ? 'I found this in your Mind Vault.' : 'Source-backed answer';
+    const lead = selectedResponseStyle === 'assistant' ? el('p', 'Source-backed answer below.', 'muted') : null;
+    out.append(el('h2', heading), ...(lead ? [lead] : []), sourceCard({ title: data.answer.source.title, path: data.answer.source.path, excerpt: data.answer.text }, 'Top source'), el('p', 'Verified: sources cited, source paths scoped, read-only retrieval.', 'muted'), speechControls(data.answer.text));
     if (speechSupported && autoRead.checked) {
       speakText(data.answer.text, null);
     }
@@ -359,6 +385,12 @@ function commandDesk() {
   q('#send').addEventListener('click', submitCommand);
 
   updateSpeechSettingControls();
+  responseStyle.value = selectedResponseStyle;
+  responseStyle.addEventListener('change', () => {
+    selectedResponseStyle = responseStyle.value === 'assistant' ? 'assistant' : 'direct';
+    responseStyle.value = selectedResponseStyle;
+    saveResponseStyle();
+  });
   if (!speechSupported) {
     autoRead.disabled = true;
     voiceSelect.disabled = true;
