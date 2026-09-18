@@ -148,7 +148,7 @@ function commandDesk() {
   textarea{box-sizing:border-box;width:100%;min-height:110px;padding:12px;background:#07100b;color:#fff;border:1px solid #4d8b63;border-radius:8px;font:inherit}
   button{margin-top:12px;padding:10px 16px;border:0;border-radius:8px;background:#83d698;color:#082010;font-weight:700;cursor:pointer}
   button:disabled{cursor:not-allowed;opacity:.55}.voice-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.voice-row button{margin-top:12px}.voice-status{color:#b5cabb;font-size:.9em}.voice-status[data-state="error"]{color:#ffb4a8}
-  .auto-submit,.auto-read{display:flex;align-items:center;gap:6px;color:#b5cabb;font-size:.9em}.speech-settings{display:grid;gap:8px;margin-top:12px;padding:12px;background:#0b1710;border-radius:8px}.speech-settings label{display:flex;align-items:center;gap:10px;color:#b5cabb;font-size:.9em}.speech-settings select{min-width:220px;padding:6px;background:#07100b;color:#fff;border:1px solid #4d8b63;border-radius:6px}.speech-settings input[type="range"]{flex:1}.speech-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}.speech-row button{margin-top:0}.speech-status,.speech-settings-status{color:#b5cabb;font-size:.9em}.result{margin-top:20px;padding:16px;background:#07100b;border-radius:8px;min-height:4em}
+  .auto-submit,.auto-read{display:flex;align-items:center;gap:6px;color:#b5cabb;font-size:.9em}.speech-settings{display:grid;gap:8px;margin-top:12px;padding:12px;background:#0b1710;border-radius:8px}.speech-settings label{display:flex;align-items:center;gap:10px;color:#b5cabb;font-size:.9em}.speech-settings select{min-width:220px;padding:6px;background:#07100b;color:#fff;border:1px solid #4d8b63;border-radius:6px}.speech-settings input[type="range"]{flex:1}.speech-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}.speech-row button{margin-top:0}.speech-status,.speech-settings-status{color:#b5cabb;font-size:.9em}.prompt-panels{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:18px}.prompt-panel{padding:14px;background:#0b1710;border-radius:8px}.prompt-panel h2{margin-bottom:10px}.prompt-list{display:grid;gap:7px}.prompt-item{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#d8eadc;font-size:.92em}.prompt-item button{margin-top:0;padding:6px 10px;flex:none}.result{margin-top:20px;padding:16px;background:#07100b;border-radius:8px;min-height:4em}
   .source{margin-top:12px;padding:14px;border-left:3px solid #83d698;background:#0b1710}.path,.muted{font-size:.9em;color:#9eb2a4}.excerpt{white-space:pre-wrap;color:#eff9f1}
 </style>
 <main class="shell">
@@ -175,6 +175,18 @@ function commandDesk() {
     <span id="speech-settings-status" class="speech-settings-status" role="status"></span>
   </div>
   <button id="send" type="button">Search Mind Vault</button>
+  <p class="muted">Recent searches and favorites are stored only in this browser.</p>
+  <div class="prompt-panels">
+    <section class="prompt-panel" aria-labelledby="recent-searches-heading">
+      <h2 id="recent-searches-heading">Recent searches</h2>
+      <div id="recent-searches" class="prompt-list"></div>
+      <button id="clear-history" type="button">Clear local history</button>
+    </section>
+    <section class="prompt-panel" aria-labelledby="favorite-prompts-heading">
+      <h2 id="favorite-prompts-heading">Favorite prompts</h2>
+      <div id="favorite-prompts" class="prompt-list"></div>
+    </section>
+  </div>
   <section id="result" class="result" aria-live="polite">Ready.</section>
   <p class="muted">This desk is available only on this Windows computer at 127.0.0.1.</p>
 </main>
@@ -187,6 +199,9 @@ function commandDesk() {
   const autoSubmit = q('#auto-submit');
   const autoRead = q('#auto-read');
   const responseStyle = q('#response-style');
+  const recentSearches = q('#recent-searches');
+  const favoritePrompts = q('#favorite-prompts');
+  const clearHistory = q('#clear-history');
   const voiceSelect = q('#voice-select');
   const voiceRate = q('#voice-rate');
   const voicePitch = q('#voice-pitch');
@@ -199,9 +214,20 @@ function commandDesk() {
   const speechSupported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
   const speechSettingsKey = 'veridan-command-desk-speech-settings-v1';
   const responseStyleKey = 'veridan-command-desk-response-style-v1';
+  const historyKey = 'veridan-command-desk-history-v1';
+  const favoritesKey = 'veridan-command-desk-favorites-v1';
+  const historyLimit = 10;
+  const defaultFavoritePrompts = [
+    'What do we know about Veridan OS?',
+    'What did we decide about zero cross?',
+    'Search the Mind Vault for TradingView MCP',
+    'What have we written about Mind Vault?',
+  ];
   const defaultSpeechSettings = { voiceKey: '', rate: 0.9, pitch: 0.9, volume: 1.0 };
   let speechSettings = loadSpeechSettings();
   let selectedResponseStyle = loadResponseStyle();
+  let promptHistory = loadPromptList(historyKey);
+  let favoritePromptList = loadPromptList(favoritesKey, defaultFavoritePrompts);
   let selectedVoice = null;
   let recognition = null;
 
@@ -255,6 +281,63 @@ function commandDesk() {
     } catch {
       speechSettingsStatus.textContent = 'Response style could not be saved in this browser.';
     }
+  }
+
+  function safePromptForStorage(prompt) {
+    const normalized = typeof prompt === 'string' ? prompt.trim() : '';
+    if (!normalized || normalized.length > 512) return null;
+    if (/\\b(password|passwd|secret|credential|token|bearer|api[ _-]?key|hmac|dpapi|private key|authorization|cookie)\\b/i.test(normalized)) return null;
+    if (/-----BEGIN [A-Z ]+-----|\\b(?:eyJ[a-zA-Z0-9_-]{10,}|sk-[a-zA-Z0-9_-]{10,})\\b/.test(normalized)) return null;
+    if (/\\b[A-Za-z0-9_-]{32,}\\b|[A-Za-z]:\\\\|\\b(?:https?:\\/\\/|\\\\\\\\)/i.test(normalized)) return null;
+    return normalized;
+  }
+
+  function loadPromptList(key, fallback = []) {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(key) || 'null');
+      const prompts = Array.isArray(saved) ? saved : fallback;
+      return prompts.map(safePromptForStorage).filter(Boolean).slice(0, historyLimit);
+    } catch {
+      return fallback.map(safePromptForStorage).filter(Boolean).slice(0, historyLimit);
+    }
+  }
+
+  function savePromptList(key, prompts) {
+    window.localStorage.setItem(key, JSON.stringify(prompts.map(safePromptForStorage).filter(Boolean).slice(0, historyLimit)));
+  }
+
+  function renderPromptList(container, prompts) {
+    container.replaceChildren();
+    if (prompts.length === 0) {
+      container.append(el('span', 'None yet.', 'muted'));
+      return;
+    }
+    prompts.forEach((prompt) => {
+      const row = el('div', '', 'prompt-item');
+      const label = el('span', prompt);
+      const use = el('button', 'Use');
+      use.type = 'button';
+      use.addEventListener('click', () => {
+        command.value = prompt;
+        command.focus();
+        out.textContent = 'Prompt loaded. Review it before searching.';
+      });
+      row.append(label, use);
+      container.append(row);
+    });
+  }
+
+  function renderPromptPanels() {
+    renderPromptList(recentSearches, promptHistory);
+    renderPromptList(favoritePrompts, favoritePromptList);
+  }
+
+  function recordSubmittedPrompt(prompt) {
+    const safePrompt = safePromptForStorage(prompt);
+    if (!safePrompt) return;
+    promptHistory = [safePrompt, ...promptHistory.filter((item) => item !== safePrompt)].slice(0, historyLimit);
+    savePromptList(historyKey, promptHistory);
+    renderPromptPanels();
   }
 
   function voiceKey(voice) {
@@ -373,6 +456,7 @@ function commandDesk() {
       out.textContent = 'Enter a question first.';
       return;
     }
+    recordSubmittedPrompt(text);
     out.textContent = 'Searching Mind Vault…';
     try {
       const response = await fetch('/v1/commands', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: text }) });
@@ -385,6 +469,13 @@ function commandDesk() {
   q('#send').addEventListener('click', submitCommand);
 
   updateSpeechSettingControls();
+  renderPromptPanels();
+  clearHistory.addEventListener('click', () => {
+    promptHistory = [];
+    savePromptList(historyKey, promptHistory);
+    renderPromptPanels();
+    out.textContent = 'Local search history cleared.';
+  });
   responseStyle.value = selectedResponseStyle;
   responseStyle.addEventListener('change', () => {
     selectedResponseStyle = responseStyle.value === 'assistant' ? 'assistant' : 'direct';
