@@ -110,3 +110,13 @@
 
 **Current status:** Implemented; expansion requires a new registered capability and verification contract.
 
+## Sanitized local Core event history
+
+**Decision:** Persist only allowlisted Core event projections to an append-only local JSONL audit file. Keep the EventBus in-memory when no store is supplied, and replay persisted records without notifying subscribers.
+
+**Reason:** The local governed runtime needs restart-surviving audit history without coupling this stage to the unresolved Base44 migration or adding a database dependency. Persistence must not turn Mind Vault, Companion, browser, or credential data into an audit channel.
+
+**Evidence:** `runtime/core-store.mjs`, `runtime/event-bus.mjs`, `scripts/veridan-command-gateway.mjs`, `test/core-store.test.mjs`.
+
+**Current status:** Phase A implemented. Durable approval lifecycle and approval authority are intentionally not implemented.
+

@@ -24,7 +24,8 @@ Base44 application
 - `runtime/orchestrator.mjs` loads contracts, routes commands, dispatches only allowlisted Companion and memory capabilities, publishes verified events, and fails closed on verification errors.
 - `runtime/policy-engine.mjs` applies risk, mode, approval, and hard-denial rules.
 - `runtime/contracts.mjs` loads the JSON contracts from `core/`, `mind-vault/`, `gateway/`, and `companion/`.
-- `runtime/event-bus.mjs` validates registered event shapes and keeps immutable event history in process memory.
+- `runtime/event-bus.mjs` validates registered event shapes, keeps immutable event history in process memory, and optionally appends sanitized event projections through `runtime/core-store.mjs`.
+- `runtime/core-store.mjs` provides append-only local JSONL audit storage and replay. The real Command Desk launcher configures the default store under `%LOCALAPPDATA%\\Veridan\\Core\\audit.jsonl` on Windows; tests and other callers may keep the bus in memory or provide an explicit path.
 - `runtime/companion-dispatcher.mjs` exposes only signed `screen.see` and user-directed `screen.watch.prepare` dispatch.
 - `runtime/memory-dispatcher.mjs` verifies source-backed, scoped, read-only Mind Vault responses.
 - `runtime/command-gateway.mjs` serves the local Command Desk and exposes only `memory.search` through same-origin `POST /v1/commands`.
@@ -60,5 +61,5 @@ The repository documents migration controls as unfinished in `docs/JARVIS_INTEGR
 
 `core/mcp-registry.json` records connector boundaries for GitHub, TradingView MCP, the Tekram paper API, Obsidian, OpenClaw, Windows Companion, and Command Desk. Registry presence does not prove live external availability.
 
-Mind Vault notes are filesystem Markdown. Base44 entities provide application persistence. UI planning state uses browser localStorage. Local Core event history is process-local memory, not durable storage. Trading calculations and meanings are defined by `core/tekram-contract.json`; the contract keeps trading `PAPER_ONLY`, disables live execution and money movement, and denies live broker behavior.
+Mind Vault notes are filesystem Markdown. Base44 entities provide application persistence. UI planning state uses browser localStorage. Local Core event history is process-local memory by default; the real Command Desk runtime opts into sanitized append-only JSONL audit history outside the repository. Persisted projections contain identifiers, policy outcomes, verification names, source identifiers, and bounded counts only. They never contain Mind Vault text, excerpts, screenshots, tokens, credentials, or arbitrary metadata. Durable approval lifecycle and authority remain unimplemented. Trading calculations and meanings are defined by `core/tekram-contract.json`; the contract keeps trading `PAPER_ONLY`, disables live execution and money movement, and denies live broker behavior.
 

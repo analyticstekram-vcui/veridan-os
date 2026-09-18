@@ -6,7 +6,7 @@ Last verified: September 18, 2026
 
 - Repository: `analyticstekram-vcui/veridan-os`
 - Default branch: `main`
-- Current HEAD: `1e6a3d2247d2a4756d7d04387777d2606c4ec753`
+- Current HEAD: `0194ed6cd19d814b25f554c3a1a98a7069787779`
 - Current milestone: Jarvis Integration Milestone 6 — Retrieval Quality
 - Current manifest state: `core_retrieval_quality_candidate`
 - PRs #1 through #9 are merged; no open PRs were present at reconnaissance time.
@@ -22,6 +22,7 @@ The repository declares `READ_ONLY` as the default mode, `PAPER_ONLY` for tradin
 - Signed Core-to-Companion dispatch for ephemeral SEE and visible WATCH preparation.
 - Authenticated, fixed-scope Mind Vault retrieval.
 - Retrieval quality ranking with source-backed excerpts and citations.
+- Sanitized append-only local Core event history with replay and deterministic duplicate handling.
 - Loopback-only Command Desk restricted to `memory.search`.
 - Limited current-user Windows task installers and static installer tests.
 
@@ -31,16 +32,15 @@ Evidence: `runtime/`, `companion/`, `mind-vault/`, `gateway/`, `core/`, `test/`,
 
 The repository checks run during reconnaissance passed:
 
-- Core tests: 17 passed.
+- Core tests: 25 passed.
 - Installer and integration tests: 9 passed.
 - Veridan Doctor: 13 passed / 0 failed.
 
-The live Windows Mind Vault, Companion, and Command Desk preflights were not run because this environment did not have the target Windows task state, DPAPI tokens, or the user’s actual Mind Vault process. Lint and Vite build were not run because `node_modules` was absent. PR #9 reports those checks as passing, but that is historical PR evidence.
+The live Windows Mind Vault verification passed from the clean `main` checkout. The install script passed, `verify-core-retrieval.ps1` passed, the official vault path `C:\Users\peter\OneDrive\Desktop\obsidians\veridans mind` existed, and the bridge health endpoint was `http://127.0.0.1:57446/health`. The verification passed `mind_vault_health`, `mind_vault_scope_read_only`, `core_memory_search`, and `source_text_not_event_persisted`. Live Windows Companion verification passed through `companion/windows/scripts/verify.ps1`, Core + Companion integration verification passed through `companion/windows/scripts/verify-core-integration.ps1`, and Command Gateway verification passed through `gateway/windows/scripts/verify.ps1`. Lint and Vite build were not run because `node_modules` was absent. PR #9 reports those checks as passing, but that is historical PR evidence.
 
 ## Current incomplete work
 
-- Prove Milestone 6 with the actual Windows retrieval preflight.
-- Establish durable Core event and approval persistence.
+- Implement durable approval lifecycle and approval authority; Phase A event history is complete.
 - Define migration from the older Base44 `veridanApi` path to the governed local runtime.
 - Confirm current external MCP and VPS availability.
 - Establish a current deployment verification path; `main` contains no `.github/workflows/` directory.
