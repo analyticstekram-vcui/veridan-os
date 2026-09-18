@@ -75,6 +75,15 @@ test('Command Desk does not make unsupported request methods or remote assets av
   assert.match(source, /en-gb/);
   assert.match(source, /id="auto-read" type="checkbox"/);
   assert.doesNotMatch(source, /id="auto-read" type="checkbox" checked/);
+  assert.match(source, /id="response-style"/);
+  assert.match(source, /option value="direct" selected>Direct<\/option>/);
+  assert.match(source, /option value="assistant">Assistant<\/option>/);
+  assert.match(source, /responseStyleKey/);
+  assert.match(source, /I found this in your Mind Vault\./);
+  assert.match(source, /Source-backed answer below\./);
+  assert.match(source, /No verified source found\./);
+  assert.match(source, /That request is outside read-only mode\./);
+  assert.match(source, /sourceCard\(\{ title: data\.answer\.source\.title/);
   assert.match(source, /id="auto-submit" type="checkbox"/);
   assert.doesNotMatch(source, /id="auto-submit" type="checkbox" checked/);
   assert.match(source, /fetch\('\/v1\/commands'/);
