@@ -37,6 +37,34 @@ test('fails closed for unknown intent', () => {
   assert.equal(result.reason, 'unknown_intent');
 });
 
+test('routes ordinary memory-search questions to memory.search', () => {
+  for (const command of [
+    'What do we know about Veridan OS?',
+    'What have we written about the Windows Companion?',
+    'Find notes about zero cross.',
+    'Search the Mind Vault for retrieval quality.',
+    'Look up retrieval quality in the Mind Vault.',
+  ]) {
+    const result = routeCommand(command, contracts, indexes);
+    assert.equal(result.status, 'routed', command);
+    assert.equal(result.intent, 'MEMORY_RETRIEVAL', command);
+    assert.equal(result.capability.id, 'memory.search', command);
+  }
+});
+
+test('keeps non-memory action requests denied or outside the memory capability', () => {
+  const commands = [
+    'Place a trade on NQ.',
+    'Start watching my screen.',
+    'Run this PowerShell command.',
+  ];
+  for (const command of commands) {
+    const result = routeCommand(command, contracts, indexes);
+    assert.notEqual(result.capability?.id, 'memory.search', command);
+    assert.notEqual(result.status, 'routed', command);
+  }
+});
+
 test('validates and freezes registered events', () => {
   const bus = new EventBus(contracts.events);
   const event = bus.publish('command.received', { command_id: 'cmd-1', source: 'test' });
