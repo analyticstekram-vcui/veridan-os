@@ -44,6 +44,8 @@ test('routes ordinary memory-search questions to memory.search', () => {
     'Find notes about zero cross.',
     'Search the Mind Vault for retrieval quality.',
     'Look up retrieval quality in the Mind Vault.',
+    'What was decided about zero cross?',
+    'What did we agree on for signal cross?',
   ]) {
     const result = routeCommand(command, contracts, indexes);
     assert.equal(result.status, 'routed', command);
