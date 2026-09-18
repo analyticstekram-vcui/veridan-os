@@ -36,7 +36,7 @@ The repository checks run during reconnaissance passed:
 - Installer and integration tests: 9 passed.
 - Veridan Doctor: 13 passed / 0 failed.
 
-The live Windows Mind Vault verification passed from the clean `main` checkout. The install script passed, `verify-core-retrieval.ps1` passed, the official vault path `C:\Users\peter\OneDrive\Desktop\obsidians\veridans mind` existed, and the bridge health endpoint was `http://127.0.0.1:57446/health`. The verification passed `mind_vault_health`, `mind_vault_scope_read_only`, `core_memory_search`, and `source_text_not_event_persisted`. Live Windows Companion and Command Desk preflights were not run. Lint and Vite build were not run because `node_modules` was absent. PR #9 reports those checks as passing, but that is historical PR evidence.
+The live Windows Mind Vault verification passed from the clean `main` checkout. The install script passed, `verify-core-retrieval.ps1` passed, the official vault path `C:\Users\peter\OneDrive\Desktop\obsidians\veridans mind` existed, and the bridge health endpoint was `http://127.0.0.1:57446/health`. The verification passed `mind_vault_health`, `mind_vault_scope_read_only`, `core_memory_search`, and `source_text_not_event_persisted`. Live Windows Companion verification passed through `companion/windows/scripts/verify.ps1`, Core + Companion integration verification passed through `companion/windows/scripts/verify-core-integration.ps1`, and Command Gateway verification passed through `gateway/windows/scripts/verify.ps1`. Lint and Vite build were not run because `node_modules` was absent. PR #9 reports those checks as passing, but that is historical PR evidence.
 
 ## Current incomplete work
 
